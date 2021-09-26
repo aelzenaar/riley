@@ -40,7 +40,7 @@ p_entry=tk.Entry(elliptic_frame, textvariable=elliptic_p_var, state=tk.DISABLED)
 q_entry=tk.Entry(elliptic_frame, textvariable=elliptic_q_var, state=tk.DISABLED)
 slice_selection = tk.StringVar()
 slice_selection.set('parabolic')
-def change_slice():
+def change_slice(*args):
     new_slice = slice_selection.get()
     if new_slice == 'parabolic':
         redraw_slice(riley.riley_slice_from_fast_farey(40))
@@ -59,10 +59,8 @@ def change_slice():
             messagebox.showerror("Error", "Values for elliptic element orders must be integers")
     return True
 
-p_entry['validate']='focusout'
-q_entry['validate']='focusout'
-p_entry['validatecommand']=change_slice
-q_entry['validatecommand']=change_slice
+p_entry.bind('<Return>', change_slice)
+q_entry.bind('<Return>', change_slice)
 tk.Radiobutton(selector_frame, text='Parabolic slice', variable=slice_selection, value='parabolic', command=change_slice).grid(column=0,row=0)
 tk.Radiobutton(elliptic_frame, text='Elliptic slice', variable=slice_selection, value='elliptic', command=change_slice).pack()
 tk.Label(elliptic_frame, text="p: ").pack(side='left')
@@ -158,10 +156,11 @@ def compute_farey(*args):
         word = farey_words.farey_word(int(vals[0]),int(vals[1]))
         fareyword.set('W_'+slope.get()+' = ' + ''.join(word) + ' = ')
 
-        matrix = farey_words.farey_matrix(int(vals[0]),int(vals[1]),complex(selected_position.get()),1,1)
-        fareymatrix.set(str(matrix))
+        if selected_position.get() != '':
+          matrix = farey_words.farey_matrix(int(vals[0]),int(vals[1]),complex(selected_position.get()),1,1)
+          fareymatrix.set(str(matrix))
 
-        fareytrace.set('tr = ' + str(np.trace(matrix)))
+          fareytrace.set('tr = ' + str(np.trace(matrix)))
     except ValueError:
         messagebox.showerror("Error", "Enter the slope in the format p/q with p,q integers")
 

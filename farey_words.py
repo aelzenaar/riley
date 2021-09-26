@@ -20,7 +20,7 @@ from numpy.polynomial import Polynomial as P
 
 # Return a string in X and Y representing the r/s Farey word.
 def farey_word(rx,sx):
-    lookup_table=[['X','x'],['y','Y']]
+    lookup_table=[['x','X'],['Y','y']]
     r = int(rx/np.gcd(rx,sx))
     s = int(sx/np.gcd(rx,sx))
     length = 2*s
@@ -28,7 +28,7 @@ def farey_word(rx,sx):
         h = i*r/s
         h = h+1/2 if np.ceil(h)==h else h
         return int(np.ceil(h))
-    return [ lookup_table[1 - i%2][1- height(i)%2]  for i in range(1,length+1) ]
+    return [ lookup_table[i%2][height(i)%2]  for i in range(1,length+1) ]
 
 # Compute the Farey matrix for slope r/s and matrices [[alpha,1],[0,alpha^-1]], [[beta,0],[mu,beta^-1]].
 def farey_matrix(r,s,mu,alpha,beta):
@@ -116,7 +116,7 @@ def farey_coefficients_fast_elliptic(r,s,a,b):
 
   (p1,q1),(p2,q2) = farey_neighbours(r,s)
 
-  if ((q1 + q2) % 4) == 0:
+  if ((q1 + q2) % 2) == 0:
     p = (4+1/alpha**2+alpha**2 + 1/beta**2 + beta**2) - farey_coefficients_fast_elliptic(p1,q1,a,b)*farey_coefficients_fast_elliptic(p2,q2,a,b) - farey_coefficients_fast_elliptic(np.abs(p1-p2),np.abs(q1-q2),a,b)
   else:
     p = 2*(alpha/beta + beta/alpha + 1/(alpha*beta) + alpha*beta) - farey_coefficients_fast_elliptic(p1,q1,a,b)*farey_coefficients_fast_elliptic(p2,q2,a,b) - farey_coefficients_fast_elliptic(np.abs(p1-p2),np.abs(q1-q2),a,b)
