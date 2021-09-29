@@ -1,10 +1,9 @@
 import riley
-import limit_set
+import kleinian
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import numpy as np
-from tkinter import messagebox
-import farey_words
+import farey
 
 root = tk.Tk()
 root.title("Riley slice limit sets")
@@ -43,7 +42,7 @@ slice_selection.set('parabolic')
 def change_slice(*args):
     new_slice = slice_selection.get()
     if new_slice == 'parabolic':
-        redraw_slice(riley.riley_slice_from_fast_farey(40))
+        redraw_slice(riley.riley_slice(np.inf,np.inf,40))
         p_entry['state']=tk.DISABLED
         q_entry['state']=tk.DISABLED
     elif new_slice == 'elliptic':
@@ -52,7 +51,7 @@ def change_slice(*args):
             elliptic_p = int(elliptic_p_var.get())
             elliptic_q = int(elliptic_q_var.get())
             print('redraw with p = ' + str(elliptic_p) + ' q = ' + str(elliptic_q))
-            redraw_slice(riley.riley_slice_from_fast_farey_elliptic(elliptic_p,elliptic_q,20))
+            redraw_slice(riley.riley_slice(elliptic_p,elliptic_q,40))
             p_entry['state']=tk.NORMAL
             q_entry['state']=tk.NORMAL
         except ValueError:
@@ -87,10 +86,10 @@ positionframe = ttk.Frame(mainframe)
 positionframe.grid(column=0, row=1, sticky='nsew')
 
 hover_position = tk.StringVar()
-ttk.Label(positionframe, textvariable=hover_position).pack()#grid(column=0, row=0, sticky='w')
+ttk.Label(positionframe, textvariable=hover_position).pack()
 
 selected_position = tk.StringVar()
-ttk.Label(positionframe, textvariable=selected_position, foreground='red').pack()#.grid(column=1, row=0, sticky='e')
+ttk.Label(positionframe, textvariable=selected_position, foreground='red').pack()
 
 limitset_canvas = tk.Canvas(mainframe,width=scale*(limit_bounds[1]-limit_bounds[0]),height=scale*(limit_bounds[3]-limit_bounds[2]))
 limitset_canvas.grid(column=1,row=0)
@@ -125,7 +124,7 @@ def redraw_limit(canvas_x,canvas_y):
     elif current_slice == 'elliptic':
         A = np.array([[np.exp(2j*np.pi/elliptic_p),1],[0,np.exp(-2j*np.pi/elliptic_p)]])
         B = np.array([[np.exp(2j*np.pi/elliptic_q),0],[x + y*1j,np.exp(-2j*np.pi/elliptic_q)]])
-    limitset = limit_set.markov([A,B],[1],8,True,1000)
+    limitset = kleinian.limit_set_markov([A,B],[1],8,True,1000)
     colours = {-2: 'red', -1:'blue', 1:'green', 2:'yellow'}
     limitset_canvas.delete("all")
     for (point,colour) in limitset:
@@ -153,14 +152,18 @@ def compute_farey(*args):
         vals = slope.get().split('/')
         if len(vals) != 2:
             raise ValueError
-        word = farey_words.farey_word(int(vals[0]),int(vals[1]))
-        fareyword.set('W_'+slope.get()+' = ' + ''.join(word) + ' = ')
+        word = farey.word(int(vals[0]),int(vals[1]))
+        fareyword.set('W_'+slope.get()+' = ' + ''.join(word))
 
         if selected_position.get() != '':
-          matrix = farey_words.farey_matrix(int(vals[0]),int(vals[1]),complex(selected_position.get()),1,1)
-          fareymatrix.set(str(matrix))
+            current_slice = slice_selection.get()
+            if current_slice == 'parabolic':
+                matrix = farey.matrix(int(vals[0]),int(vals[1]),complex(selected_position.get()),1,1)
+            elif current_slice == 'elliptic':
+                matrix = farey.matrix(int(vals[0]),int(vals[1]),complex(selected_position.get()),np.exp(2j*np.pi/elliptic_p),np.exp(2j*np.pi/elliptic_q))
+            fareymatrix.set('matrix = ' + str(matrix))
+            fareytrace.set('tr = ' + str(np.trace(matrix)))
 
-          fareytrace.set('tr = ' + str(np.trace(matrix)))
     except ValueError:
         messagebox.showerror("Error", "Enter the slope in the format p/q with p,q integers")
 
@@ -178,9 +181,9 @@ ttk.Checkbutton(farey_input_frame, text="Recompute on select?", variable=auto_re
 farey_output_frame = ttk.Frame(mainframe)
 farey_output_frame.grid(column=1,row=2)
 fareyword = tk.StringVar()
-ttk.Label(farey_output_frame, textvariable=fareyword).grid(column=0, row=0, sticky=tk.W)
+ttk.Label(farey_output_frame, textvariable=fareyword).grid(column=0, row=0, sticky=tk.W, padx=(0, 10))
 fareymatrix = tk.StringVar()
-ttk.Label(farey_output_frame, textvariable=fareymatrix).grid(column=1, row=0, sticky=tk.W)
+ttk.Label(farey_output_frame, textvariable=fareymatrix).grid(column=1, row=0, padx=(0, 10), sticky=tk.W)
 fareytrace = tk.StringVar()
 ttk.Label(farey_output_frame, textvariable=fareytrace).grid(column=2, row=0, sticky=tk.E)
 

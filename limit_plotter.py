@@ -1,5 +1,5 @@
 import numpy as np
-import limit_set
+import kleinian
 import matplotlib.pyplot as plt
 import readline
 
@@ -20,10 +20,10 @@ coloured = (input("Coloured output (y/n):") == "y")
 
 if algo == "dfs":
     only_leaves = (input("Show just leaf points (y/n): ") == "y")
-    ls = limit_set.dfs(generators,np.array([1]),depth,coloured,only_leaves)
+    ls = kleinian.limit_set_dfs(generators,np.array([1]),depth,coloured,only_leaves)
 elif algo == "markov":
     reps = int(input("Number of points to generate: "))
-    ls = limit_set.markov(generators,np.array([1]),depth,coloured,reps)
+    ls = kleinian.limit_set_markov(generators,np.array([1]),depth,coloured,reps)
 else:
     raise RuntimeError
 

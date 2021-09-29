@@ -1,17 +1,22 @@
+""" Generic methods for Kleinian groups.
+"""
+
 import numpy as np
 from numpy.linalg import inv
 import random
 
-# Return an array of points approximating the limit set of a group using a depth-first search.
-#
-# Arguments:
-#  generators - list of 2x2 matrix generators
-#  seed - complex points to map by the generators to produce the limit limit set
-#  depth - maximal word length to generate
-#  colored - if false, return the limit set as a list only; if true, return the limit set as a list of pairs (g,p) where p is a point and g is the initial letter of the word used to generate it
-#            in the form of (the position in the generator array + 1) if g is a generator, and the negative of that if g is the inverse of a generator.
-#  only_leaves - if true return images of seed under all the words, if false only under the longest words
-def dfs(generators, seed, depth, coloured, only_leaves=False):
+def limit_set_dfs(generators, seed, depth, coloured, only_leaves=False):
+    """ Return an array of points approximating the limit set of a group using a depth-first search.
+
+        Arguments:
+          generators - list of 2x2 matrix generators
+          seed - complex points to map by the generators to produce the limit limit set
+          depth - maximal word length to generate
+          coloured - if false, return the limit set as a list only; if true, return the limit set as a list of pairs (g,p) where p is a point and g is the initial letter of the word used to generate it
+                     in the form of (the position in the generator array + 1) if g is a generator, and the negative of that if g is the inverse of a generator.
+          only_leaves - if True then return images of seed under all the words, otherwise return the images only under the longest words (default False)
+    """
+
     # word_list is list of things of the form  (previous generator added, current word, initial generator decorator)
     decorated_gens = [(g, generators[g], g+1) for g in range(len(generators))]
     decorated_invs = [(g+len(generators), inv(generators[g]), -g-1) for g in range(len(generators))]
@@ -41,19 +46,19 @@ def dfs(generators, seed, depth, coloured, only_leaves=False):
 
 
 
-# Return an array of points approximating the limit set of a group using a Markov chain search.
-#
-# Arguments:
-#  generators - list of 2x2 matrix generators
-#  seed - complex points to map by the generators to produce the limit limit set
-#  depth - maximal word length to generate
-#  colored - if false, return the limit set as a list only; if true, return the limit set as a list of pairs (g,p) where p is a point and g is the initial letter of the word used to generate it
-#            in the form of (the position in the generator array + 1) if g is a generator, and the negative of that if g is the inverse of a generator.
-#  reps - how many words to generate
-def markov(generators, seed, depth, coloured, reps):
+def limit_set_markov(generators, seed, depth, coloured, reps):
+    """ Return an array of points approximating the limit set of a group using a Markov chain search.
+
+        Arguments:
+          generators - list of 2x2 matrix generators
+          seed - complex points to map by the generators to produce the limit limit set
+          depth - maximal word length to generate
+          coloured - if false, return the limit set as a list only; if true, return the limit set as a list of pairs (g,p) where p is a point and g is the initial letter of the word used to generate it
+                     in the form of (the position in the generator array + 1) if g is a generator, and the negative of that if g is the inverse of a generator.
+          reps - how many words to generate
+    """
     decorated_gens = { g + 1: generators[g] for g in range(len(generators))}
     decorated_gens.update({-g - 1: inv(generators[g]) for g in range(len(generators))})
-#    decorated_gens = { g + 1: generators[g] for g in range(len(generators))} | {-g - 1: inv(generators[g]) for g in range(len(generators))}
 
     seed = np.stack((seed,np.ones(len(seed))))
     limit_set_projective = [];
