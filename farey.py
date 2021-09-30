@@ -117,7 +117,10 @@ def neighbours(p,q):
     r1,s1 = next_neighbour(p,q)
     r2 = p - r1
     s2 = q - s1
-    return (r2,s2),(r1,s1)
+    if r1/s1 > r2/s2:
+        return (r1,s1),(r2,s2)
+    else:
+        return (r2,s2),(r1,s1)
 
 polynomial_coefficients_fast_cache = {}
 def polynomial_coefficients_fast(r,s,alpha,beta):

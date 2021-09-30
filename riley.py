@@ -15,26 +15,91 @@ try:
 except ImportError:
     mpsolve_avail = False
 
-def riley_slice(a, b, max_denom, use_mpsolve=mpsolve_avail, max_iter=100, tol=1e-2):
+try:
+    import sympy
+    sympy_avail = True
+except ImportError:
+    sympy_avail = False
+
+try:
+    import matlab.engine
+    matlab_avail = True
+    matlab_eng = None
+except ImportError:
+    matlab_avail = False
+
+def poly_solve(poly, solver='mpsolve' if mpsolve_avail else 'scipy', max_iter=100, tol=1e-2, try_int=False):
+    """ Solve a polynomial numerically.
+
+        There are three possible solvers: the mpsolve solver (see https://numpi.dm.unipi.it/software/mpsolve), the solver built
+        in to scipy followed by an attempt to improve the results using Newton's algorithm, or sympy.
+
+        Arguments:
+          poly --- a scipy polynomial
+          solver -- one of 'mpsolve', 'scipy', 'sympy'
+
+        The following arguments are only used by the scipy solver:
+          max_iter -- maximum number of iterations for Newton's algorithm (default 100)
+          tol -- allowable error of each point (default 1e-2)
+
+        The following arguments are only used by the mpsolve solver:
+          try_int -- assume that the coefficients of poly are integral (default False)
+    """
+
+    q = poly.degree()
+
+    if solver == 'mpsolve':
+        if not mpsolve_avail:
+            raise RuntimeError('mpsolve selected even though it seems not to be installed')
+        mpsolve_ctx = mpsolve.Context()
+        mpsolve_poly = mpsolve.MonomialPoly(mpsolve_ctx, q)
+
+        for d in range(0,q+1):
+            if try_int:
+                mpsolve_poly.set_coefficient(d, int(poly.coef[d]))
+            else:
+                mpsolve_poly.set_coefficient(d, np.real(poly.coef[d]), np.imag(poly.coef[d]))
+        return mpsolve_ctx.solve(mpsolve_poly)
+
+    elif solver == 'sympy':
+        if not sympy_avail:
+            raise RuntimeError('sympy selected even though it seems not to be installed')
+        ZZ = sympy.Symbol('Z')
+        sympy_poly = 0
+        for d in range(0,q+1):
+            sympy_poly = sympy_poly + poly.coef[d] * ZZ**d
+        return [sympy.N(root) for root in sympy.solve(sympy_poly,ZZ)]
+
+    elif solver == 'scipy':
+        roots_bad = poly.roots()
+        return [scipy.optimize.newton(poly, root, poly.deriv(),fprime2=poly.deriv(2),maxiter=max_iter,tol=tol) for root in roots_bad]
+
+    elif solver == 'matlab':
+        if not matlab_avail:
+            raise RuntimeError('matlab selected even though it seems not to be installed')
+        global matlab_eng
+        if matlab_eng == None:
+            matlab_eng = matlab.engine.start_matlab()
+
+        print(str([complex(x) for x in poly.coef]))
+
+        return list(matlab_eng.roots([complex(x) for x in poly.coef]))
+
+    raise RuntimeError(f'unknown solver {solver}')
+
+def riley_slice(a, b, max_denom, solver='mpsolve' if mpsolve_avail else 'scipy', **kwargs):
     """ Return an accurate approximation to the Riley slice.
 
-        There are two possible solvers: the mpsolve solver (see https://numpi.dm.unipi.it/software/mpsolve), or the solver built
-        in to scipy followed by an attempt to improve the results using Newton's algorithm.
+        There are three possible solvers: the mpsolve solver (see https://numpi.dm.unipi.it/software/mpsolve), the solver built
+        in to scipy followed by an attempt to improve the results using Newton's algorithm, or sympy.
 
         Arguments:
           a, b -- the order of the cone points represented by X and Y respectively. Use np.inf for the parabolic case (or 1, since exp(2*pi*i/1) = exp(0) = 1).
           max_denom -- the maximum denominator Farey polynomials to compute
-          use_mpsolve - use the mpsolve solver if True or scipy if False (default True if mpsolve is installed, else False)
+          solver -- one of 'mpsolve', 'scipy', 'sympy'
 
-        The following arguments are only used if use_mpsolve is False:
-          max_iter -- maximum number of iterations for Newton's algorithm (default 100)
-          tol -- allowable error of each point (default 1e-2)
+        Further keyword arguments are passed directly to poly_solve(), i.e. tol and max_iter for scipy.
     """
-
-    if use_mpsolve:
-        if not mpsolve_avail:
-            raise RuntimeError('mpsolve selected even though it seems not to be installed')
-        mpsolve_ctx = mpsolve.Context()
 
     alpha = 1 if a == np.inf else np.exp(2j*np.pi/a)
     beta = 1 if b == np.inf else np.exp(2j*np.pi/b)
@@ -44,24 +109,16 @@ def riley_slice(a, b, max_denom, use_mpsolve=mpsolve_avail, max_iter=100, tol=1e
       for p in range(1,q+1):
         if np.gcd(p,q) == 1:
           poly = farey.polynomial_coefficients_fast(p,q,alpha,beta) + 2
-          if use_mpsolve:
-              mpsolve_poly = mpsolve.MonomialPoly(mpsolve_ctx, q)
-
-              for d in range(0,q+1):
-                  if alpha == 1 and beta == 1:
-                      mpsolve_poly.set_coefficient(d, int(poly.coef[d]))
-                  else:
-                      mpsolve_poly.set_coefficient(d, np.real(poly.coef[d]), np.imag(poly.coef[d]))
-              points.extend(mpsolve_ctx.solve(mpsolve_poly))
-          else:
-              roots_bad = poly.roots()
-              try:
-                roots = [scipy.optimize.newton(poly, root, poly.deriv(),fprime2=poly.deriv(2),maxiter=max_iter,tol=tol) for root in roots_bad]
-              except RuntimeError as e:
-                print(str(e))
-                print(f'Newton failed to converge at {p}/{q}')
-                return points
-              points.extend(roots)
+          try:
+              if alpha == 1 and beta == 1:
+                  try_int = True
+              else:
+                  try_int = False
+              points.extend(poly_solve(poly, solver, try_int=try_int, **kwargs))
+          except RuntimeError as e:
+              print(str(e))
+              print(f'Newton failed to converge at {p}/{q}')
+              return points
     return points
 
 def riley_centre(a,b):
@@ -77,7 +134,7 @@ def riley_centre(a,b):
     roots = poly.roots()
     return (4 + roots[0])/2
 
-def cusp_point(a,b,p,q, use_mpsolve=mpsolve_avail):
+def cusp_point(a, b, p, q, solver='mpsolve' if mpsolve_avail else 'scipy', **kwargs):
     """ Return an approximation to the p/q-cusp point on the Riley slice boundary.
 
         Let Phi_{p/q} be the p/q-Farey polynomial; the p/q-pleating ray is then the connected
@@ -87,7 +144,9 @@ def cusp_point(a,b,p,q, use_mpsolve=mpsolve_avail):
         Arguments:
           a,b -- orders of X and Y respectively
           p,q -- integers representing the slope of the desired cusp; p and q must be coprime and nonnegative and p/q must lie in [0,2).
-          use_mpsolve - use the mpsolve solver if True or scipy if False (default True if mpsolve is installed, else False)
+          solver -- one of 'mpsolve', 'scipy', 'sympy'
+
+        Further keyword arguments are passed directly to poly_solve(), i.e. tol and max_iter for scipy.
     """
 
     if p/q > 1:
@@ -96,20 +155,7 @@ def cusp_point(a,b,p,q, use_mpsolve=mpsolve_avail):
     beta = 1 if b == np.inf else np.exp(2j*np.pi/b)
 
     poly = farey.polynomial_coefficients_fast(p,q,alpha,beta) + 2
-
-    if use_mpsolve:
-        if not mpsolve_avail:
-            raise RuntimeError('mpsolve selected even though it seems not to be installed')
-        mpsolve_ctx = mpsolve.Context()
-        mpsolve_poly = mpsolve.MonomialPoly(mpsolve_ctx, q)
-        for d in range(0,q+1):
-            if alpha == 1 and beta == 1:
-                mpsolve_poly.set_coefficient(d, int(poly.coef[d]))
-            else:
-                mpsolve_poly.set_coefficient(d, np.real(poly.coef[d]), np.imag(poly.coef[d]))
-        roots = mpsolve_ctx.solve(mpsolve_poly)
-    else:
-        roots = poly.roots()
+    roots = polysolve(poly, solver, **kwargs)
 
     if q == 1:
         return roots[0]
@@ -124,6 +170,7 @@ def cusp_point(a,b,p,q, use_mpsolve=mpsolve_avail):
         right_argument_roots = []
         for root in roots:
             argument = np.angle(root - centre)
+            #print(f'{left_cusp_angle} < {argument} < {right_cusp_angle}?')
             if left_cusp_angle < argument and argument < right_cusp_angle:
                 right_argument_roots.append(root)
 
