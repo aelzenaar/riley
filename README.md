@@ -28,6 +28,15 @@ There are three files containing general Python code which can be called in the 
  * [riley.py](riley.py) -- methods for working with the Riley slices
 
 
+## Dependencies
+
+ * Python 3 (tested on 3.9.7)
+ * numpy and scipy (all)
+ * matplotlib (limit_plotter.py, slice_plotter.py)
+ * tkinter (graphical_limits.py)
+ * pydot, networkx (farey_graph.py)
+ * [mpsolve](https://numpi.dm.unipi.it/software/mpsolve) (optional, falls back to numpy if not installed - but produces much better results)
+
 ## References
 <a id="KS94">[KS94]</a>
 Linda Keen and Caroline Series. “The Riley slice of Schottky space”. In: *Proceedings of the London Mathematics Society* 3.1 (69 1994), pp. 72–90.

@@ -2,7 +2,7 @@ import numpy as np
 import riley
 import matplotlib.pyplot as plt
 
-ls = riley.riley_slice(5,5,30, 10000, 1e-5) # See documentation for this function in riley.py.
+ls = riley.riley_slice(np.inf,np.inf,40) # See documentation for this function in riley.py.
 
 plt.scatter([np.real(t) for t in ls],[np.imag(t) for t in ls],marker=".",s=5,linewidths=0,c='k')
 plt.axis('equal')
