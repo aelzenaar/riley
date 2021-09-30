@@ -121,14 +121,15 @@ def cusp_point(a,b,p,q, use_mpsolve=mpsolve_avail):
         left_cusp_angle = np.angle(cusp_point(a,b,r1,s1) - centre)
         right_cusp_angle = np.angle(cusp_point(a,b,r2,s2) - centre)
 
-        desired_cusp = None
+        right_argument_roots = []
         for root in roots:
             argument = np.angle(root - centre)
             if left_cusp_angle < argument and argument < right_cusp_angle:
-                desired_cusp = root
-                break
-        if desired_cusp == None:
-            raise RuntimeError('failed to find cusp')
-        return desired_cusp
+                right_argument_roots.append(root)
+
+        if right_argument_roots == []:
+            raise RuntimeError('failed to find cusp: couldn\'t bound argument')
+
+        return max(right_argument_roots, key=np.abs)
     else:
         raise ValueError('q < 1?')
