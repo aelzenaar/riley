@@ -58,8 +58,8 @@ def poly_solve(poly, solver='mpsolve' if mpsolve_avail else 'scipy', max_iter=10
             if try_int:
                 mpsolve_poly.set_coefficient(d, int(poly.coef[d]))
             else:
-                mpsolve_poly.set_coefficient(d, np.real(poly.coef[d]), np.imag(poly.coef[d]))
-        return mpsolve_ctx.solve(mpsolve_poly)
+                mpsolve_poly.set_coefficient(d, np.real(poly.coef[d]))
+        return mpsolve_ctx.solve(mpsolve_poly, algorithm=mpsolve.Algorithm.STANDARD_MPSOLVE)
 
     elif solver == 'sympy':
         if not sympy_avail:
@@ -81,9 +81,11 @@ def poly_solve(poly, solver='mpsolve' if mpsolve_avail else 'scipy', max_iter=10
         if matlab_eng == None:
             matlab_eng = matlab.engine.start_matlab()
 
-        print(str([complex(x) for x in poly.coef]))
-
-        return list(matlab_eng.roots([complex(x) for x in poly.coef]))
+        roots = matlab_eng.roots(matlab.double([complex(x) for x in poly.coef],is_complex=True))
+        try:
+            return list(roots)
+        except TypeError:
+            return [roots]
 
     raise RuntimeError(f'unknown solver {solver}')
 
