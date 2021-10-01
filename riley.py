@@ -59,7 +59,7 @@ def poly_solve(poly, solver='mpsolve' if mpsolve_avail else 'scipy', max_iter=10
                 mpsolve_poly.set_coefficient(d, int(poly.coef[d]))
             else:
                 mpsolve_poly.set_coefficient(d, float(np.real(poly.coef[d])))
-        return mpsolve_ctx.solve(mpsolve_poly, algorithm=mpsolve.Algorithm.STANDARD_MPSOLVE)
+        return mpsolve_ctx.solve(mpsolve_poly)
 
     elif solver == 'sympy':
         if not sympy_avail:

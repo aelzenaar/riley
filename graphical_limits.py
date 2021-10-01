@@ -9,14 +9,14 @@ import farey
 # CONFIGURATION OPTIONS
 ###
 
-limit_set_points = 1200
-limit_set_depth = 7
+limit_set_points = 1000
+limit_set_depth = 6
 
 scale = 100
 riley_bounds = (-4,4,-4,4) # -x,x,-y,y
 limit_bounds = (-4,4,-4,4) # -x,x,-y,y
 
-slice_parabolic_max_denom = 40
+slice_parabolic_max_denom = 30
 slice_elliptic_max_denom = 30
 
 ## OPTIONS END
@@ -137,7 +137,8 @@ def redraw_limit(canvas_x,canvas_y):
     elif current_slice == 'elliptic':
         A = np.array([[np.exp(2j*np.pi/elliptic_p),1],[0,np.exp(-2j*np.pi/elliptic_p)]])
         B = np.array([[np.exp(2j*np.pi/elliptic_q),0],[x + y*1j,np.exp(-2j*np.pi/elliptic_q)]])
-    limitset = kleinian.limit_set_markov([A,B],[1,-1],limit_set_depth,True,limit_set_points)
+    seed = farey.fixed_points(0,1,B[1][0],A[0][0],B[0][0])
+    limitset = kleinian.limit_set_markov([A,B],seed,limit_set_depth,True,limit_set_points)
     colours = {-2: 'red', -1:'blue', 1:'green', 2:'yellow'}
     limitset_canvas.delete("all")
     for (points,colour) in limitset:

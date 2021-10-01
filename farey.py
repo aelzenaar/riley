@@ -20,8 +20,10 @@ def generator(letter,alpha,beta,mu):
           beta - upper-left entry of Y
           mu - lower-right entry of Y
     """
-    X = np.array([[alpha,1],[0,alpha**(-1)]])
-    Y = np.array([[beta,0],[mu,beta**(-1)]])
+    a = np.cdouble(alpha)
+    b = np.cdouble(beta)
+    X = np.array([[a,1],[0,a**(-1)]])
+    Y = np.array([[b,0],[mu,b**(-1)]])
     table = {'X': X,
             'Y': Y,
             'x': inv(X),
@@ -67,6 +69,21 @@ def matrix(r,s,mu,alpha,beta):
         product = np.matmul(product,generator(letter,alpha,beta,mu))
 
     return product
+
+def fixed_points(r,s,mu,alpha,beta):
+    """ Compute the fixed points of the Farey word of slope r/s.
+
+        Arguments:
+          r, s --- coprime integers representing the slope r/s
+          mu, alpha, beta --- parameters of the group as defined in generator() above
+    """
+
+
+    m = matrix(r,s,mu,alpha,beta)
+    surd = np.sqrt((m[1][1] - m[0][0])**2 - 4*m[0][1]*m[1][0])
+    trans = m[0][0] - m[1][1]
+
+    return [(trans+surd)/(2*m[1][0]),(trans-surd)/(2*m[1][0])]
 
 farey_next_cache = {}
 def next_neighbour(p,q):
