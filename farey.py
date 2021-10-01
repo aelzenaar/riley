@@ -123,6 +123,7 @@ def neighbours(p,q):
         return (r2,s2),(r1,s1)
 
 polynomial_coefficients_fast_cache = {}
+recursion_cache = {}
 def polynomial_coefficients_fast(r,s,alpha,beta):
     """ Return the coefficients of the Farey polynomial of slope r/s.
 
@@ -136,8 +137,12 @@ def polynomial_coefficients_fast(r,s,alpha,beta):
     if (r,s,alpha,beta) in polynomial_coefficients_fast_cache:
         return polynomial_coefficients_fast_cache[(r,s,alpha,beta)]
 
-    even_const = (4+1/alpha**2+alpha**2 + 1/beta**2 + beta**2)
-    odd_const = 2*(alpha/beta + beta/alpha + 1/(alpha*beta) + alpha*beta)
+    if (alpha,beta) in recursion_cache:
+        even_const,odd_const = recursion_cache[(alpha,beta)]
+    else:
+        even_const = (4+1/alpha**2+alpha**2 + 1/beta**2 + beta**2)
+        odd_const = 2*(alpha/beta + beta/alpha + 1/(alpha*beta) + alpha*beta)
+        recursion_cache[(alpha,beta)] = (even_const,odd_const)
 
     if r == 0 and s == 1:
         return P([alpha/beta+beta/alpha,-1])

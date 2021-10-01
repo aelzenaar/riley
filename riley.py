@@ -58,7 +58,7 @@ def poly_solve(poly, solver='mpsolve' if mpsolve_avail else 'scipy', max_iter=10
             if try_int:
                 mpsolve_poly.set_coefficient(d, int(poly.coef[d]))
             else:
-                mpsolve_poly.set_coefficient(d, np.real(poly.coef[d]))
+                mpsolve_poly.set_coefficient(d, float(np.real(poly.coef[d])))
         return mpsolve_ctx.solve(mpsolve_poly, algorithm=mpsolve.Algorithm.STANDARD_MPSOLVE)
 
     elif solver == 'sympy':
@@ -103,24 +103,19 @@ def riley_slice(a, b, max_denom, solver='mpsolve' if mpsolve_avail else 'scipy',
         Further keyword arguments are passed directly to poly_solve(), i.e. tol and max_iter for scipy.
     """
 
-    alpha = 1 if a == np.inf else np.exp(2j*np.pi/a)
-    beta = 1 if b == np.inf else np.exp(2j*np.pi/b)
+    alpha = 1 if a == np.inf else np.clongdouble(np.exp(2j*np.pi/a))
+    beta = 1 if b == np.inf else np.clongdouble(np.exp(2j*np.pi/b))
 
     points = []
     for q in range(1,max_denom+1):
       for p in range(1,q+1):
         if np.gcd(p,q) == 1:
           poly = farey.polynomial_coefficients_fast(p,q,alpha,beta) + 2
-          try:
-              if alpha == 1 and beta == 1:
-                  try_int = True
-              else:
-                  try_int = False
-              points.extend(poly_solve(poly, solver, try_int=try_int, **kwargs))
-          except RuntimeError as e:
-              print(str(e))
-              print(f'Newton failed to converge at {p}/{q}')
-              return points
+          if alpha == 1 and beta == 1:
+              try_int = True
+          else:
+              try_int = False
+          points.extend(poly_solve(poly, solver, try_int=try_int, **kwargs))
     return points
 
 def riley_centre(a,b):

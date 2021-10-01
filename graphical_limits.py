@@ -5,12 +5,25 @@ from tkinter import ttk, messagebox
 import numpy as np
 import farey
 
-root = tk.Tk()
-root.title("Riley slice limit sets")
+###
+# CONFIGURATION OPTIONS
+###
+
+limit_set_points = 1200
+limit_set_depth = 7
 
 scale = 100
 riley_bounds = (-4,4,-4,4) # -x,x,-y,y
 limit_bounds = (-4,4,-4,4) # -x,x,-y,y
+
+slice_parabolic_max_denom = 40
+slice_elliptic_max_denom = 30
+
+## OPTIONS END
+
+
+root = tk.Tk()
+root.title("Riley slice limit sets")
 
 def canvas_to_usual_coords(x,y):
     y = scale*(riley_bounds[3]-riley_bounds[2]) - y
@@ -42,7 +55,7 @@ slice_selection.set('parabolic')
 def change_slice(*args):
     new_slice = slice_selection.get()
     if new_slice == 'parabolic':
-        redraw_slice(riley.riley_slice(np.inf,np.inf,40))
+        redraw_slice(riley.riley_slice(np.inf,np.inf,slice_parabolic_max_denom))
         p_entry['state']=tk.DISABLED
         q_entry['state']=tk.DISABLED
     elif new_slice == 'elliptic':
@@ -51,7 +64,7 @@ def change_slice(*args):
             elliptic_p = int(elliptic_p_var.get())
             elliptic_q = int(elliptic_q_var.get())
             print('redraw with p = ' + str(elliptic_p) + ' q = ' + str(elliptic_q))
-            redraw_slice(riley.riley_slice(elliptic_p,elliptic_q,40))
+            redraw_slice(riley.riley_slice(elliptic_p,elliptic_q,slice_elliptic_max_denom))
             p_entry['state']=tk.NORMAL
             q_entry['state']=tk.NORMAL
         except ValueError:
@@ -124,15 +137,16 @@ def redraw_limit(canvas_x,canvas_y):
     elif current_slice == 'elliptic':
         A = np.array([[np.exp(2j*np.pi/elliptic_p),1],[0,np.exp(-2j*np.pi/elliptic_p)]])
         B = np.array([[np.exp(2j*np.pi/elliptic_q),0],[x + y*1j,np.exp(-2j*np.pi/elliptic_q)]])
-    limitset = kleinian.limit_set_markov([A,B],[1],8,True,1000)
+    limitset = kleinian.limit_set_markov([A,B],[1,-1],limit_set_depth,True,limit_set_points)
     colours = {-2: 'red', -1:'blue', 1:'green', 2:'yellow'}
     limitset_canvas.delete("all")
-    for (point,colour) in limitset:
-        if point.real > limit_bounds[0]  and point.real < limit_bounds[1] and point.imag > limit_bounds[2] and point.imag < limit_bounds[3]:
-            radius=1
-            x,y = usual_coords_to_canvas(float(point.real),float(point.imag))
-            #print(str(x) +' '+ str(y)  +' '+ str(point)+ ' '+ str(colour)+colours[colour])
-            limitset_canvas.create_oval(x-radius, y-radius, x + radius, y + radius, fill=colours[colour], width = 0)
+    for (points,colour) in limitset:
+        for point in points:
+          if point.real > limit_bounds[0]  and point.real < limit_bounds[1] and point.imag > limit_bounds[2] and point.imag < limit_bounds[3]:
+              radius=1
+              x,y = usual_coords_to_canvas(float(point.real),float(point.imag))
+              #print(str(x) +' '+ str(y)  +' '+ str(point)+ ' '+ str(colour)+colours[colour])
+              limitset_canvas.create_oval(x-radius, y-radius, x + radius, y + radius, fill=colours[colour], width = 0)
 
 def mouse_click(event):
     global mouse_down

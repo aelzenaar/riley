@@ -36,12 +36,11 @@ def limit_set_dfs(generators, seed, depth, coloured, only_leaves=False):
     seed = np.stack((seed,np.ones(len(seed))))
     word_list = flat_list = [item for sublist in word_list for item in sublist]
     limit_set_projective = [(np.matmul(w[1], seed), w[2]) for w in word_list]
-    limit_set = [(p[0][0]/p[0][1], p[1]) for p in limit_set_projective]
 
     if coloured:
-      return limit_set
+        return [([q[0]/q[1] for q in p[0].transpose()], p[1]) for p in limit_set_projective]
     else:
-      return limit_set[0]
+        return [[q[0]/q[1] for q in p[0].transpose()] for p in limit_set_projective]
 
 
 
@@ -81,11 +80,7 @@ def limit_set_markov(generators, seed, depth, coloured, reps):
           word = np.matmul(word,decorated_gens[key])
           limit_set_projective.append( (np.matmul(word, seed), first) )
 
-    limit_set = [p[0]/p[1] for p in limit_set_projective]
-
-    limit_set = [(p[0][0]/p[0][1], p[1]) for p in limit_set_projective]
-
     if coloured:
-      return limit_set
+        return [([q[0]/q[1] for q in p[0].transpose()], p[1]) for p in limit_set_projective]
     else:
-      return limit_set[0]
+        return [[q[0]/q[1] for q in p[0].transpose()] for p in limit_set_projective]
