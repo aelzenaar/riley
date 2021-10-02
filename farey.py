@@ -149,6 +149,7 @@ def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=np.clongd
         Arguments:
           r,s -- coprime integers representing the slope of the desired polynomial
           alpha, beta -- parameters of the group
+          coefficient_field_hint -- expected type of the polynomial coefficients (e.g. for real coefficients, np.longdouble)
     """
 
     if (r,s,alpha,beta) in polynomial_coefficients_fast_cache:
