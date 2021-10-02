@@ -152,7 +152,7 @@ def cusp_point(a, b, p, q, solver='mpsolve' if mpsolve_avail else 'scipy', **kwa
     beta = 1 if b == np.inf else np.exp(2j*np.pi/b)
 
     poly = farey.polynomial_coefficients_fast(p,q,alpha,beta) + 2
-    roots = polysolve(poly, solver, **kwargs)
+    roots = poly_solve(poly, solver, **kwargs)
 
     if q == 1:
         return roots[0]
