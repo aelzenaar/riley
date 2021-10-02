@@ -45,7 +45,7 @@ plt.axis('equal')
 plt.tight_layout()
 
 if 'f' in outtypes:
-    plt.savefig(filename,dpi=200)
+    plt.savefig(filename,dpi=500)
 
 if 's' in outtypes:
     plt.show()

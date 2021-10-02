@@ -9,8 +9,8 @@ import farey
 # CONFIGURATION OPTIONS
 ###
 
-limit_set_points = 1000
-limit_set_depth = 6
+limit_set_points = 2000
+limit_set_depth = 5
 
 scale = 100
 riley_bounds = (-4,4,-4,4) # -x,x,-y,y
