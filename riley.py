@@ -103,19 +103,22 @@ def riley_slice(a, b, max_denom, solver='mpsolve' if mpsolve_avail else 'scipy',
         Further keyword arguments are passed directly to poly_solve(), i.e. tol and max_iter for scipy.
     """
 
-    alpha = 1 if a == np.inf else np.clongdouble(np.exp(2j*np.pi/a))
-    beta = 1 if b == np.inf else np.clongdouble(np.exp(2j*np.pi/b))
+    alpha = 1 if a == np.inf else np.exp(2j*np.pi/a)
+    beta = 1 if b == np.inf else np.exp(2j*np.pi/b)
 
     points = []
     for q in range(1,max_denom+1):
       for p in range(1,q+1):
         if np.gcd(p,q) == 1:
-          poly = farey.polynomial_coefficients_fast(p,q,alpha,beta) + 2
+          poly = farey.polynomial_coefficients_fast(p, q, alpha, beta, np.longdouble) + 2
           if alpha == 1 and beta == 1:
               try_int = True
           else:
               try_int = False
-          points.extend(poly_solve(poly, solver, try_int=try_int, **kwargs))
+          try:
+            points.extend(poly_solve(poly, solver, try_int=try_int, **kwargs))
+          except np.ComplexWarning as e:
+            raise RuntimeError(f'p = {p} q={q}') from e
     return points
 
 def riley_centre(a,b):
@@ -127,7 +130,7 @@ def riley_centre(a,b):
     alpha = 1 if a == np.inf else np.exp(2j*np.pi/a)
     beta = 1 if b == np.inf else np.exp(2j*np.pi/b)
 
-    poly = farey.polynomial_coefficients_fast(1,1,alpha,beta) + 2
+    poly = farey.polynomial_coefficients_fast(p, q, alpha, beta, int if (alpha == 1 and beta == 1) else np.longdouble) + 2
     roots = poly.roots()
     return (4 + roots[0])/2
 
@@ -135,7 +138,7 @@ def cusp_point(a, b, p, q, solver='mpsolve' if mpsolve_avail else 'scipy', **kwa
     """ Return an approximation to the p/q-cusp point on the Riley slice boundary.
 
         Let Phi_{p/q} be the p/q-Farey polynomial; the p/q-pleating ray is then the connected
-        component of Phi_{p/q}^{-1}((-\infty,-2)) with asymptotic slope pi*p/q, and the p/q-cusp
+        component of Phi_{p/q}^{-1}((-\\infty,-2)) with asymptotic slope pi*p/q, and the p/q-cusp
         is the point on this branch which is the inverse image of -2.
 
         Arguments:
@@ -151,7 +154,7 @@ def cusp_point(a, b, p, q, solver='mpsolve' if mpsolve_avail else 'scipy', **kwa
     alpha = 1 if a == np.inf else np.exp(2j*np.pi/a)
     beta = 1 if b == np.inf else np.exp(2j*np.pi/b)
 
-    poly = farey.polynomial_coefficients_fast(p,q,alpha,beta) + 2
+    poly = farey.polynomial_coefficients_fast(p, q, alpha, beta, int if (alpha == 1 and beta == 1) else np.longdouble) + 2
     roots = poly_solve(poly, solver, **kwargs)
 
     if q == 1:

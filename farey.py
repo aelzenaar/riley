@@ -134,14 +134,14 @@ def neighbours(p,q):
     r1,s1 = next_neighbour(p,q)
     r2 = p - r1
     s2 = q - s1
-    if r1/s1 > r2/s2:
+    if r1/s1 < r2/s2:
         return (r1,s1),(r2,s2)
     else:
         return (r2,s2),(r1,s1)
 
 polynomial_coefficients_fast_cache = {}
 recursion_cache = {}
-def polynomial_coefficients_fast(r,s,alpha,beta):
+def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=np.clongdouble):
     """ Return the coefficients of the Farey polynomial of slope r/s.
 
         The method used is the recursion algorithm.
@@ -157,22 +157,22 @@ def polynomial_coefficients_fast(r,s,alpha,beta):
     if (alpha,beta) in recursion_cache:
         even_const,odd_const = recursion_cache[(alpha,beta)]
     else:
-        even_const = (4+1/alpha**2+alpha**2 + 1/beta**2 + beta**2)
-        odd_const = 2*(alpha/beta + beta/alpha + 1/(alpha*beta) + alpha*beta)
+        even_const = coefficient_field_hint(4+1/alpha**2+alpha**2 + 1/beta**2 + beta**2)
+        odd_const = coefficient_field_hint(2*(alpha/beta + beta/alpha + 1/(alpha*beta) + alpha*beta))
         recursion_cache[(alpha,beta)] = (even_const,odd_const)
 
     if r == 0 and s == 1:
-        return P([alpha/beta+beta/alpha,-1])
+        return P([coefficient_field_hint(alpha/beta+beta/alpha),-1])
     if r == 1 and s == 1:
-        return P([alpha*beta+1/(alpha*beta),1])
+        return P([coefficient_field_hint(alpha*beta+1/(alpha*beta)),1])
     if r == 1 and s == 2:
-        return P([2,1/(alpha*beta)+alpha*beta-alpha/beta-beta/alpha,1])
+        return P([2,coefficient_field_hint(1/(alpha*beta)+alpha*beta-alpha/beta-beta/alpha),1])
 
     (p1,q1),(p2,q2) = neighbours(r,s)
 
     if ((q1 + q2) % 2) == 0:
-        p = even_const - polynomial_coefficients_fast(p1,q1,alpha,beta)*polynomial_coefficients_fast(p2,q2,alpha,beta) - polynomial_coefficients_fast(np.abs(p1-p2),np.abs(q1-q2),alpha,beta)
+        p = even_const - polynomial_coefficients_fast(p1,q1,alpha,beta,coefficient_field_hint)*polynomial_coefficients_fast(p2,q2,alpha,beta,coefficient_field_hint) - polynomial_coefficients_fast(np.abs(p1-p2),np.abs(q1-q2),alpha,beta,coefficient_field_hint)
     else:
-        p = odd_const - polynomial_coefficients_fast(p1,q1,alpha,beta)*polynomial_coefficients_fast(p2,q2,alpha,beta) - polynomial_coefficients_fast(np.abs(p1-p2),np.abs(q1-q2),alpha,beta)
+        p = odd_const - polynomial_coefficients_fast(p1,q1,alpha,beta,coefficient_field_hint)*polynomial_coefficients_fast(p2,q2,alpha,beta,coefficient_field_hint) - polynomial_coefficients_fast(np.abs(p1-p2),np.abs(q1-q2),alpha,beta,coefficient_field_hint)
     polynomial_coefficients_fast_cache[(r,s,alpha,beta)] = p
     return p
