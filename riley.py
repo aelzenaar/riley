@@ -130,7 +130,7 @@ def riley_centre(a,b):
     alpha = 1 if a == np.inf else np.exp(2j*np.pi/a)
     beta = 1 if b == np.inf else np.exp(2j*np.pi/b)
 
-    poly = farey.polynomial_coefficients_fast(p, q, alpha, beta, int if (alpha == 1 and beta == 1) else np.longdouble) + 2
+    poly = farey.polynomial_coefficients_fast(1, 1, alpha, beta, int if (alpha == 1 and beta == 1) else np.longdouble) + 2
     roots = poly.roots()
     return (4 + roots[0])/2
 
