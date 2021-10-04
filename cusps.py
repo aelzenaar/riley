@@ -13,7 +13,7 @@ q = 3
 r = 1
 s = 2
 
-reps = 10000
+reps = 100000
 depth = 20
 
 
@@ -33,7 +33,7 @@ seeds = farey.fixed_points(0,1,mu,alpha,beta)\
 ls = kleinian.limit_set_markov([X,Y],np.array(seeds),depth,True,reps)
 
 colours = {-2: 'r', -1:'b', 1:'g', 2:'y'}
-plt.scatter([np.real(t[0]) for t in ls],[np.imag(t[0]) for t in ls],c=[colours[t[1]] for t in ls],s=1,alpha=1,marker='.',linewidths=0)
+plt.scatter([np.real(t[0]) for t in ls],[np.imag(t[0]) for t in ls],c=[colours[t[1]] for t in ls],s=.1,alpha=.1,marker='.',linewidths=0)
 
 plt.axis('equal')
 plt.axis([-2,2,-1,2])
