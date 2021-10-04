@@ -2,10 +2,16 @@
 """
 
 import numpy as np
-from numpy.linalg import inv
+
 import random
 from multiprocessing import Pool
 import functools
+
+def _fast_inv(mat):
+    """ Invert a 2x2 matrix *assuming it has det 1*.
+    """
+    assert(mat.shape == (2,2))
+    return [[mat[1][1],-mat[0][1]],[-mat[1][0],mat[0][0]]]
 
 def limit_set_dfs(generators, seed, depth, coloured, only_leaves=False):
     """ Return an array of points approximating the limit set of a group using a depth-first search.
@@ -21,10 +27,10 @@ def limit_set_dfs(generators, seed, depth, coloured, only_leaves=False):
 
     # word_list is list of things of the form  (previous generator added, current word, initial generator decorator)
     decorated_gens = [(g, generators[g], g+1) for g in range(len(generators))]
-    decorated_invs = [(g+len(generators), inv(generators[g]), -g-1) for g in range(len(generators))]
+    decorated_invs = [(g+len(generators), _fast_inv(generators[g]), -g-1) for g in range(len(generators))]
     word_list = [decorated_gens + decorated_invs]
 
-    generators.extend([inv(g) for g in generators])
+    generators.extend([_fast_inv(g) for g in generators])
 
     for d in range(depth):
         print("Computing at depth " + str(d+1) + "/"+ str(depth))
@@ -45,20 +51,26 @@ def limit_set_dfs(generators, seed, depth, coloured, only_leaves=False):
         return [[q[0]/q[1] for q in p[0].transpose()] for p in limit_set_projective]
 
 
-def _dynamics_of_one_word(decorated_gens, seed, depth,_):
+_decorated_gens_global = {}
+_seed_global = []
+def _dynamics_of_one_word(depth,_):
     """ Generate a word of length depth using a Markov chain and return the orbits of seed under that word.
 
         Arguments and output format optimised for use in limit_set_markov not in user code.
 
         Arguments:
-          decorated_gens -- map of ints to 2x2 matrices representing the generators and their inverses
-          seed -- nx2 matrix representing n points in CP^1
           depth -- length of word to generate
           _ -- ignored (means we can curry this function inside multiprocessing.Pool.map())
 
         Returns:
           list of pairs (point,gen) where point is a complex point in the *affine* limit set and gen is the first letter of the word we generated
     """
+
+    assert(len(_seed_global) > 0)
+    assert(len(_decorated_gens_global) > 0)
+
+    seed = _seed_global
+    decorated_gens = _decorated_gens_global
 
     random.seed()
     key = random.choice(list(decorated_gens))
@@ -78,14 +90,11 @@ def _dynamics_of_one_word(decorated_gens, seed, depth,_):
 
     return orbit
 
-def _fast_inv(mat):
-    """ Invert a 2x2 matrix *assuming it has det 1*.
-    """
-    assert(mat.shape == (2,2))
-    return [[mat[1][1],-mat[0][1]],[-mat[1][0],mat[0][0]]]
-
 def limit_set_markov(generators, seed, depth, coloured, reps):
     """ Return an array of points approximating the limit set of a group using a Markov chain search.
+
+        ***NOT THREAD SAFE*** - for memory usage reasons (viz. https://stackoverflow.com/q/38084401/17047536) calling this software
+        uses the global variable _decorated_gens_global to pass information to subprocesses.
 
         Arguments:
           generators - list of 2x2 matrix generators *with det 1*.
@@ -95,15 +104,20 @@ def limit_set_markov(generators, seed, depth, coloured, reps):
                      in the form of (the position in the generator array + 1) if g is a generator, and the negative of that if g is the inverse of a generator.
           reps - how many words to generate
     """
-    decorated_gens = { g + 1: generators[g] for g in range(len(generators))}
-    decorated_gens.update({-g - 1: _fast_inv(generators[g]) for g in range(len(generators))})
+    global _decorated_gens_global
+    global _seed_global
+    _decorated_gens_global = { g + 1: generators[g] for g in range(len(generators))}
+    _decorated_gens_global.update({-g - 1: _fast_inv(generators[g]) for g in range(len(generators))})
 
     seed = np.stack((seed,np.ones(len(seed))))
+    _seed_global = seed
 
+
+    limit_set = []
     with Pool() as pool:
-        limit_set = pool.map(functools.partial(_dynamics_of_one_word, decorated_gens, seed, depth), range(reps))
-
-    limit_set = [point for sublist in limit_set for point in sublist]
+        for orbit in pool.map(functools.partial(_dynamics_of_one_word, depth), range(reps)):
+            limit_set.extend(orbit)
+            del orbit
 
     if coloured:
         return limit_set
