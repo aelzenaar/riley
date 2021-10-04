@@ -26,7 +26,7 @@ def limit_set_dfs(generators, seed, depth, coloured, only_leaves=False):
 
     for d in range(depth):
         print("Computing at depth " + str(d+1) + "/"+ str(depth))
-        word_list.append([]);
+        word_list.append([])
         for old_word in word_list[d]:
             word_list[d+1].extend([(g, np.matmul(old_word[1], generators[g]), old_word[2]) for g in range(len(generators)) if g != old_word[0]])
 
@@ -43,7 +43,43 @@ def limit_set_dfs(generators, seed, depth, coloured, only_leaves=False):
         return [[q[0]/q[1] for q in p[0].transpose()] for p in limit_set_projective]
 
 
+def _dynamics_of_one_word(decorated_gens, seed, depth):
+    """ Generate a word of length depth using a Markov chain and return the orbits of seed under that word.
 
+        Arguments and output format optimised for use in limit_set_markov not in user code.
+
+        Arguments:
+          decorated_gens -- map of ints to 2x2 matrices representing the generators and their inverses
+          seed -- nx2 matrix representing n points in CP^1
+          depth -- length of word to generate
+
+        Returns:
+          list of pairs (point,gen) where point is a complex point in the *affine* limit set and gen is the first letter of the word we generated
+    """
+
+    random.seed()
+    key = random.choice(list(decorated_gens))
+    first_letter = key
+    previous_letter = key
+    word = decorated_gens[key]
+
+    orbit = [(p[0]/p[1], first_letter) for p in np.matmul(word, seed).transpose()]
+
+    for d in range(1,depth):
+        admissable_keys = list(decorated_gens)
+        admissable_keys.remove(-previous_letter)
+        key = random.choice(admissable_keys)
+        previous_letter = key
+        word = np.matmul(word,decorated_gens[key])
+        orbit.extend([(p[0]/p[1], first_letter) for p in np.matmul(word,seed).transpose()])
+
+    return orbit
+
+def _fast_inv(mat):
+    """ Invert a 2x2 matrix *assuming it has det 1*.
+    """
+    assert(mat.shape == (2,2))
+    return [[mat[1][1],-mat[0][1]],[-mat[1][0],mat[0][0]]]
 
 def limit_set_markov(generators, seed, depth, coloured, reps):
     """ Return an array of points approximating the limit set of a group using a Markov chain search.
@@ -57,30 +93,15 @@ def limit_set_markov(generators, seed, depth, coloured, reps):
           reps - how many words to generate
     """
     decorated_gens = { g + 1: generators[g] for g in range(len(generators))}
-    decorated_gens.update({-g - 1: inv(generators[g]) for g in range(len(generators))})
+    decorated_gens.update({-g - 1: _fast_inv(generators[g]) for g in range(len(generators))})
 
     seed = np.stack((seed,np.ones(len(seed))))
     limit_set_projective = [];
 
     for n in range(reps):
-      first = 0
-      word = np.identity(2)
-      last = 0
-      for d in range(depth):
-          #print("Computing at depth " + str(d+1) + "/"+ str(depth) + " (iterate " + str(n+1) + "/" + str(reps) +")")
-          admissable_keys = list(decorated_gens)
-          try:
-            admissable_keys.remove(-last)
-          except:
-            pass
-          key = random.choice(admissable_keys)
-          last = key
-          if first == 0:
-            first = key
-          word = np.matmul(word,decorated_gens[key])
-          limit_set_projective.append( (np.matmul(word, seed), first) )
+      limit_set_projective.extend(_dynamics_of_one_word(decorated_gens, seed, depth))
 
     if coloured:
-        return [([q[0]/q[1] for q in p[0].transpose()], p[1]) for p in limit_set_projective]
+        return limit_set_projective
     else:
-        return [[q[0]/q[1] for q in p[0].transpose()] for p in limit_set_projective]
+        return [p[0] for p in limit_set_projective]
