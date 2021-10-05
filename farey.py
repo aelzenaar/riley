@@ -8,7 +8,10 @@
 import numpy as np
 from numpy.linalg import inv
 from numpy.polynomial import Polynomial as P
+import kleinian
+from functools import cache
 
+@cache
 def generator(letter,alpha,beta,mu):
     """ Return the generator of the group corresponding to the given letter, with the correct values substituted in.
 
@@ -20,14 +23,12 @@ def generator(letter,alpha,beta,mu):
           beta - upper-left entry of Y
           mu - lower-right entry of Y
     """
-    a = np.cdouble(alpha)
-    b = np.cdouble(beta)
-    X = np.array([[a,1],[0,a**(-1)]])
-    Y = np.array([[b,0],[mu,b**(-1)]])
+    X = np.array([[alpha,1],[0,alpha**(-1)]])
+    Y = np.array([[beta,0],[mu,beta**(-1)]])
     table = {'X': X,
             'Y': Y,
-            'x': inv(X),
-            'y': inv(Y)}
+            'x': kleinian._fast_inv(X),
+            'y': kleinian._fast_inv(Y)}
 
     try:
         return table[letter]
@@ -35,6 +36,7 @@ def generator(letter,alpha,beta,mu):
         raise IndexError("Unknown generator for the group")
 
 # Return a string in X and Y representing the r/s Farey word.
+@cache
 def word(r,s):
     """ Compute the Farey word of slope r/s using the cutting sequence definition.
 
@@ -85,7 +87,7 @@ def fixed_points(r,s,mu,alpha,beta):
 
     return [(trans+surd)/(2*m[1][0]),(trans-surd)/(2*m[1][0])]
 
-farey_next_cache = {}
+@cache
 def next_neighbour(p,q):
     """ Return the larger Farey neighbour of p/q in the Farey sequence of denominator q.
 
@@ -98,8 +100,6 @@ def next_neighbour(p,q):
     if np.gcd(p,q) != 1:
         raise ValueError("Arguments to farey_next should be coprime integers.")
 
-    if (p,q) in farey_next_cache:
-      return farey_next_cache[(p,q)]
     denom = q
     p1,q1 = 0,1
     p2,q2 = 1,0
@@ -122,9 +122,9 @@ def next_neighbour(p,q):
     a = int(k*p + sign*p1)
     b = int(k*q + sign*q1)
     u, v = int(a/np.gcd(a,b)), int(b/np.gcd(a,b))
-    farey_next_cache[(p,q)] = (u,v)
     return (u,v)
 
+@cache
 def neighbours(p,q):
     """ Compute the two Farey neighbours of p/q.
 
@@ -139,8 +139,15 @@ def neighbours(p,q):
     else:
         return (r2,s2),(r1,s1)
 
-polynomial_coefficients_fast_cache = {}
-recursion_cache = {}
+@cache
+def _even_const(alpha,beta,coefficient_field_hint):
+    return coefficient_field_hint(4+1/alpha**2+alpha**2 + 1/beta**2 + beta**2)
+
+@cache
+def _odd_const(alpha,beta,coefficient_field_hint):
+    return coefficient_field_hint(2*(alpha/beta + beta/alpha + 1/(alpha*beta) + alpha*beta))
+
+@cache
 def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=np.clongdouble):
     """ Return the coefficients of the Farey polynomial of slope r/s.
 
@@ -152,15 +159,8 @@ def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=np.clongd
           coefficient_field_hint -- expected type of the polynomial coefficients (e.g. for real coefficients, np.longdouble)
     """
 
-    if (r,s,alpha,beta) in polynomial_coefficients_fast_cache:
-        return polynomial_coefficients_fast_cache[(r,s,alpha,beta)]
-
-    if (alpha,beta) in recursion_cache:
-        even_const,odd_const = recursion_cache[(alpha,beta)]
-    else:
-        even_const = coefficient_field_hint(4+1/alpha**2+alpha**2 + 1/beta**2 + beta**2)
-        odd_const = coefficient_field_hint(2*(alpha/beta + beta/alpha + 1/(alpha*beta) + alpha*beta))
-        recursion_cache[(alpha,beta)] = (even_const,odd_const)
+    even_const = _even_const(alpha,beta,coefficient_field_hint)
+    odd_const = _odd_const(alpha,beta,coefficient_field_hint)
 
     if r == 0 and s == 1:
         return P([coefficient_field_hint(alpha/beta+beta/alpha),-1])
@@ -175,5 +175,4 @@ def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=np.clongd
         p = even_const - polynomial_coefficients_fast(p1,q1,alpha,beta,coefficient_field_hint)*polynomial_coefficients_fast(p2,q2,alpha,beta,coefficient_field_hint) - polynomial_coefficients_fast(np.abs(p1-p2),np.abs(q1-q2),alpha,beta,coefficient_field_hint)
     else:
         p = odd_const - polynomial_coefficients_fast(p1,q1,alpha,beta,coefficient_field_hint)*polynomial_coefficients_fast(p2,q2,alpha,beta,coefficient_field_hint) - polynomial_coefficients_fast(np.abs(p1-p2),np.abs(q1-q2),alpha,beta,coefficient_field_hint)
-    polynomial_coefficients_fast_cache[(r,s,alpha,beta)] = p
     return p
