@@ -6,6 +6,7 @@ import numpy as np
 import random
 from multiprocessing import Pool
 import functools
+import gc
 
 def _fast_inv(mat):
     """ Invert a 2x2 matrix *assuming it has det 1*.
@@ -76,17 +77,18 @@ def _dynamics_of_one_word(depth,_):
     key = random.choice(list(decorated_gens))
     first_letter = key
     previous_letter = key
-    word = decorated_gens[key]
+    image = np.matmul(decorated_gens[key], seed)
 
-    orbit = [(p[0]/p[1], first_letter) for p in np.matmul(word, seed).transpose()]
+    gc.collect() # We need to manually trigger the garbage collector because otherwise we run out of memory very quickly.
+    orbit = [(p[0]/p[1], first_letter) for p in image.transpose()]
 
     for d in range(1,depth):
         admissable_keys = list(decorated_gens)
         admissable_keys.remove(-previous_letter)
         key = random.choice(admissable_keys)
         previous_letter = key
-        word = np.matmul(word,decorated_gens[key])
-        orbit.extend([(p[0]/p[1], first_letter) for p in np.matmul(word,seed).transpose()])
+        image = np.matmul(decorated_gens[key],image)
+        orbit.extend([(p[0]/p[1], first_letter) for p in image.transpose()])
 
     return orbit
 
@@ -114,10 +116,11 @@ def limit_set_markov(generators, seed, depth, coloured, reps):
 
 
     limit_set = []
-    with Pool() as pool:
+    with Pool(maxtasksperchild=100) as pool:
         for orbit in pool.map(functools.partial(_dynamics_of_one_word, depth), range(reps)):
             limit_set.extend(orbit)
             del orbit
+            gc.collect()
 
     if coloured:
         return limit_set
