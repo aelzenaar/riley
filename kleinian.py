@@ -66,15 +66,14 @@ def _dynamics_of_one_word(decorated_gens, seed, depth,rep):
           list of pairs (point,gen) where point is a complex point in the *affine* limit set and gen is the first letter of the word we generated
     """
 
-    print(f'_dynamics_of_one_word {rep}',flush=True)
+    #print(f'_dynamics_of_one_word {rep}',flush=True)
 
     random.seed()
     key = random.choice(list(decorated_gens))
-    first_letter = key
     previous_letter = key
     image = np.matmul(decorated_gens[key], seed)
 
-    orbit = [(p[0]/p[1], first_letter) for p in image.transpose()]
+    orbit = [(p[0]/p[1], key) for p in image.transpose()]
 
     for d in range(1,depth):
         admissable_keys = list(decorated_gens)
@@ -82,7 +81,7 @@ def _dynamics_of_one_word(decorated_gens, seed, depth,rep):
         key = random.choice(admissable_keys)
         previous_letter = key
         image = np.matmul(decorated_gens[key],image)
-        orbit.extend([(p[0]/p[1], first_letter) for p in image.transpose()])
+        orbit.extend([(p[0]/p[1], key) for p in image.transpose()])
         del admissable_keys
 
     return orbit
