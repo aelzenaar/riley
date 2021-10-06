@@ -20,10 +20,10 @@ depth = 20
 
 
 
-mu = riley.cusp_point(p,q,r,s)
+mu = np.cdouble(riley.cusp_point(p,q,r,s))
 
-alpha = np.clongdouble(np.exp(2j*np.pi/p))
-beta = np.clongdouble(np.exp(2j*np.pi/q))
+alpha = np.cdouble(np.exp(2j*np.pi/p))
+beta = np.cdouble(np.exp(2j*np.pi/q))
 X = np.array([[alpha,1],[0,np.conj(alpha)]])
 Y = np.array([[beta,0],[mu,np.conj(beta)]])
 
@@ -31,7 +31,9 @@ seeds = farey.fixed_points(0,1,mu,alpha,beta)\
       + farey.fixed_points(1,1,mu,alpha,beta)\
       + farey.fixed_points(1,2,mu,alpha,beta)
 
-ls = kleinian.limit_set_markov([X,Y],np.array(seeds),depth,True,reps)
+print("Found fixed points.",flush=True)
+
+ls = list(kleinian.limit_set_markov([X,Y],np.array(seeds),depth,reps))
 
 df = pandas.DataFrame(data=[(np.real(point[0]), np.imag(point[0]), point[1]) for point in ls], columns=['x','y','colour'])
 df['colour']=df['colour'].astype("category")
@@ -42,4 +44,4 @@ colours = {-2: 'red', -1:'blue', 1:'green', 2:'yellow'}
 img =  tf.Image(tf.shade(aggc, color_key=colours))
 
 plt.imshow(img)
-plt.savefig('cusp12_elliptic35_shader.png',dpi=2000)
+plt.savefig('cusp12_elliptic35_shader2.png',dpi=2000)

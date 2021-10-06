@@ -52,9 +52,8 @@ def limit_set_dfs(generators, seed, depth, coloured, only_leaves=False):
         return [[q[0]/q[1] for q in p[0].transpose()] for p in limit_set_projective]
 
 
-_decorated_gens_global = {}
-_seed_global = []
-def _dynamics_of_one_word(depth,_):
+
+def _dynamics_of_one_word(decorated_gens, seed, depth,rep):
     """ Generate a word of length depth using a Markov chain and return the orbits of seed under that word.
 
         Arguments and output format optimised for use in limit_set_markov not in user code.
@@ -67,11 +66,7 @@ def _dynamics_of_one_word(depth,_):
           list of pairs (point,gen) where point is a complex point in the *affine* limit set and gen is the first letter of the word we generated
     """
 
-    assert(len(_seed_global) > 0)
-    assert(len(_decorated_gens_global) > 0)
-
-    seed = _seed_global
-    decorated_gens = _decorated_gens_global
+    print(f'_dynamics_of_one_word {rep}',flush=True)
 
     random.seed()
     key = random.choice(list(decorated_gens))
@@ -79,7 +74,6 @@ def _dynamics_of_one_word(depth,_):
     previous_letter = key
     image = np.matmul(decorated_gens[key], seed)
 
-    gc.collect() # We need to manually trigger the garbage collector because otherwise we run out of memory very quickly.
     orbit = [(p[0]/p[1], first_letter) for p in image.transpose()]
 
     for d in range(1,depth):
@@ -89,40 +83,33 @@ def _dynamics_of_one_word(depth,_):
         previous_letter = key
         image = np.matmul(decorated_gens[key],image)
         orbit.extend([(p[0]/p[1], first_letter) for p in image.transpose()])
+        del admissable_keys
 
     return orbit
 
-def limit_set_markov(generators, seed, depth, coloured, reps):
-    """ Return an array of points approximating the limit set of a group using a Markov chain search.
+def limit_set_markov(generators, seed, depth, reps):
+    """ An iterator yielding points points approximating the limit set of a group using a Markov chain search.
 
-        ***NOT THREAD SAFE*** - for memory usage reasons (viz. https://stackoverflow.com/q/38084401/17047536) calling this software
-        uses the global variable _decorated_gens_global to pass information to subprocesses.
+        The number of points generated will be depth*reps. Each point yelded is a list of pairs (g,p) where p is a complex-valued limit
+        set point and g is the initial letter of the word used to generate it in the form of (the position in the generator array + 1)
+        if g is a generator, and the negative of that if g is the inverse of a generator.
 
         Arguments:
           generators - list of 2x2 matrix generators *with det 1*.
           seed - complex points to map by the generators to produce the limit limit set
           depth - maximal word length to generate
-          coloured - if false, return the limit set as a list only; if true, return the limit set as a list of pairs (g,p) where p is a point and g is the initial letter of the word used to generate it
-                     in the form of (the position in the generator array + 1) if g is a generator, and the negative of that if g is the inverse of a generator.
           reps - how many words to generate
     """
-    global _decorated_gens_global
-    global _seed_global
-    _decorated_gens_global = { g + 1: generators[g] for g in range(len(generators))}
-    _decorated_gens_global.update({-g - 1: _fast_inv(generators[g]) for g in range(len(generators))})
+    decorated_gens = { g + 1: generators[g] for g in range(len(generators))}
+    decorated_gens.update({-g - 1: _fast_inv(generators[g]) for g in range(len(generators))})
 
     seed = np.stack((seed,np.ones(len(seed))))
-    _seed_global = seed
-
 
     limit_set = []
     with Pool(maxtasksperchild=100) as pool:
-        for orbit in pool.map(functools.partial(_dynamics_of_one_word, depth), range(reps)):
-            limit_set.extend(orbit)
-            del orbit
-            gc.collect()
-
-    if coloured:
-        return limit_set
-    else:
-        return [p[0] for p in limit_set]
+        for orbit in pool.imap(functools.partial(_dynamics_of_one_word, decorated_gens, seed, depth), range(reps)):
+            for pair in orbit:
+                yield pair
+    #for orbit in map(functools.partial(_dynamics_of_one_word, decorated_gens, seed, depth), range(reps)):
+        #for pair in orbit:
+            #yield pair
