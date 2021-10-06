@@ -6,21 +6,18 @@ import farey
 
 import tkinter as tk
 from tkinter import ttk, messagebox
+from PIL import Image, ImageTk
 
 import datashader as ds
 import datashader.transfer_functions as tf
 import pandas
 
-from matplotlib import pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
 ###
 # CONFIGURATION OPTIONS
 ###
 
-limit_set_points = 100
-limit_set_depth = 6
+limit_set_points = 1000
+limit_set_depth = 8
 
 scale = 100
 riley_bounds = (-4,4,-4,4) # -x,x,-y,y
@@ -114,10 +111,9 @@ ttk.Label(positionframe, textvariable=hover_position).pack()
 selected_position = tk.StringVar()
 ttk.Label(positionframe, textvariable=selected_position, foreground='red').pack()
 
-px_per_in = root.winfo_fpixels('1i')
-figure=Figure(figsize=[scale*(limit_bounds[1]-limit_bounds[0])/px_per_in, scale*(limit_bounds[3]-limit_bounds[2])/px_per_in])
-limitset_canvas = FigureCanvasTkAgg(figure, master=mainframe)
-limitset_canvas.get_tk_widget().grid(column=1,row=0)
+
+limitset_canvas = tk.Canvas(mainframe,width=scale*(limit_bounds[1]-limit_bounds[0]),height=scale*(limit_bounds[3]-limit_bounds[2]))
+limitset_canvas.grid(column=1,row=0)
 
 mouse_down = False
 def motion(event):
@@ -129,12 +125,6 @@ def motion(event):
         redraw_limit(event.x,event.y)
 
 last_selected = None
-cvs = ds.Canvas(plot_width=scale*(limit_bounds[1]-limit_bounds[0]),  \
-                plot_height=scale*(limit_bounds[3]-limit_bounds[2]), \
-                x_range=(limit_bounds[0],limit_bounds[1]),      \
-                y_range=(limit_bounds[2],limit_bounds[3]),      \
-                x_axis_type='linear',                           \
-                y_axis_type='linear')
 def redraw_limit(canvas_x,canvas_y):
     x,y = canvas_to_usual_coords(canvas_x,canvas_y)
     selected_position.set(str(x + y*1j))
@@ -155,15 +145,16 @@ def redraw_limit(canvas_x,canvas_y):
     elif current_slice == 'elliptic':
         X = farey.generator('X', np.exp(2j*np.pi/elliptic_p), np.exp(2j*np.pi/elliptic_q), x + y*1j)
         Y = farey.generator('Y', np.exp(2j*np.pi/elliptic_p), np.exp(2j*np.pi/elliptic_q), x + y*1j)
-    seed = np.array(farey.fixed_points(0,1,Y[1][0],X[0][0],Y[0][0]))
-    ls = kleinian.limit_set_markov([X,Y],seed,limit_set_depth,True,limit_set_points)
-    colours = {-2: 'red', -1:'blue', 1:'green', 2:'yellow'}
-    df = pandas.DataFrame(data=[(np.real(point[0]), np.imag(point[0]), point[1]) for point in ls], columns=['x','y','colour'])
-    df['colour']=df['colour'].astype("category")
-    aggc = cvs.points(df,'x','y',ds.by('colour', ds.count()))
-    img =  tf.Image(tf.shade(aggc, color_key=colours))
-    figure.figimage(img)
-    limitset_canvas.draw()
+    seed = [farey.fixed_points(0,1,Y[1][0],X[0][0],Y[0][0])[0]]
+    print(str(len(seed)))
+    colours = {-2: 'red', -1:'blue', 1:'green', 2:'purple'}
+    limitset_canvas.delete("all")
+    for (point,colour) in kleinian.limit_set_markov([X,Y],seed,limit_set_depth,limit_set_points):
+        if point.real > limit_bounds[0]  and point.real < limit_bounds[1] and point.imag > limit_bounds[2] and point.imag < limit_bounds[3]:
+            radius=1
+            x,y = usual_coords_to_canvas(float(point.real),float(point.imag))
+            #print(str(x) +' '+ str(y)  +' '+ str(point)+ ' '+ str(colour)+colours[colour])
+            limitset_canvas.create_oval(x-radius, y-radius, x + radius, y + radius, fill=colours[colour], width = 0)
 
 def mouse_click(event):
     global mouse_down
