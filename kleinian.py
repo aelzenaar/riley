@@ -82,7 +82,6 @@ def _dynamics_of_one_word(decorated_gens, seed, depth,rep):
         previous_letter = key
         image = np.matmul(decorated_gens[key],image)
         orbit.extend([(p[0]/p[1], key) for p in image.transpose()])
-        del admissable_keys
 
     return orbit
 
@@ -99,16 +98,17 @@ def limit_set_markov(generators, seed, depth, reps):
           depth - maximal word length to generate
           reps - how many words to generate
     """
-    decorated_gens = { g + 1: generators[g] for g in range(len(generators))}
-    decorated_gens.update({-g - 1: _fast_inv(generators[g]) for g in range(len(generators))})
+    decorated_gens = { np.byte(g + 1): generators[g] for g in range(len(generators))}
+    decorated_gens.update({np.byte(-g - 1): _fast_inv(generators[g]) for g in range(len(generators))})
 
     seed = np.stack((seed,np.ones(len(seed))))
 
     limit_set = []
-    with Pool(maxtasksperchild=100) as pool:
+    with Pool() as pool:
         for orbit in pool.imap(functools.partial(_dynamics_of_one_word, decorated_gens, seed, depth), range(reps)):
             for pair in orbit:
                 yield pair
+            del orbit
     #for orbit in map(functools.partial(_dynamics_of_one_word, decorated_gens, seed, depth), range(reps)):
         #for pair in orbit:
             #yield pair

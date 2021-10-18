@@ -16,7 +16,7 @@ r = 1
 s = 2
 
 reps = 1000000
-depth = 20
+depth = 15
 
 
 
@@ -33,15 +33,13 @@ seeds = farey.fixed_points(0,1,mu,alpha,beta)\
 
 print("Found fixed points.",flush=True)
 
-ls = list(kleinian.limit_set_markov([X,Y],np.array(seeds),depth,reps))
-
-df = pandas.DataFrame(data=[(np.real(point[0]), np.imag(point[0]), point[1]) for point in ls], columns=['x','y','colour'])
+df = pandas.DataFrame(data=[(np.real(point[0]), np.imag(point[0]), point[1]) for point in kleinian.limit_set_markov([X,Y],np.cdouble(seeds),depth,reps)], columns=['x','y','colour'], copy=False)
 df['colour']=df['colour'].astype("category")
-cvs = ds.Canvas(x_range=(-4,4), y_range=(-4,4), x_axis_type='linear', y_axis_type='linear')
+cvs = ds.Canvas(plot_width=2000,plot_height=2000,x_range=(-4,4), y_range=(-4,4), x_axis_type='linear', y_axis_type='linear')
 aggc = cvs.points(df,'x','y',ds.by('colour', ds.count()))
 
-colours = {-2: 'red', -1:'blue', 1:'green', 2:'yellow'}
-img =  tf.Image(tf.shade(aggc, color_key=colours))
+#colours = {-2: 'red', -1:'blue', 1:'green', 2:'purple'}
+img =  tf.shade(aggc)
 
 plt.imshow(img)
 plt.savefig('cusp12_elliptic35_shader2.png',dpi=2000)
