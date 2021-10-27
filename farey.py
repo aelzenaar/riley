@@ -11,6 +11,7 @@ from numpy.polynomial import Polynomial as P
 import kleinian
 from functools import cache
 
+
 @cache
 def generator(letter,alpha,beta,mu):
     """ Return the generator of the group corresponding to the given letter, with the correct values substituted in.
@@ -141,11 +142,11 @@ def neighbours(p,q):
 
 @cache
 def _even_const(alpha,beta,coefficient_field_hint):
-    return coefficient_field_hint(4+1/alpha**2+alpha**2 + 1/beta**2 + beta**2)
+    return coefficient_field_hint(4+2*np.real(alpha**2)+2*np.real(beta**2))
 
 @cache
 def _odd_const(alpha,beta,coefficient_field_hint):
-    return coefficient_field_hint(2*(alpha/beta + beta/alpha + 1/(alpha*beta) + alpha*beta))
+    return coefficient_field_hint(4*(np.real(alpha/beta) + np.real(alpha*beta)))
 
 @cache
 def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=np.clongdouble):
@@ -159,20 +160,16 @@ def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=np.clongd
           coefficient_field_hint -- expected type of the polynomial coefficients (e.g. for real coefficients, np.longdouble)
     """
 
-    even_const = _even_const(alpha,beta,coefficient_field_hint)
-    odd_const = _odd_const(alpha,beta,coefficient_field_hint)
-
     if r == 0 and s == 1:
-        return P([coefficient_field_hint(alpha/beta+beta/alpha),-1])
+        return P([coefficient_field_hint(2*np.real(alpha/beta)),-1])
     if r == 1 and s == 1:
-        return P([coefficient_field_hint(alpha*beta+1/(alpha*beta)),1])
+        return P([coefficient_field_hint(2*np.real(alpha*beta)),1])
     if r == 1 and s == 2:
-        return P([2,coefficient_field_hint(1/(alpha*beta)+alpha*beta-alpha/beta-beta/alpha),1])
+        return P([2,coefficient_field_hint(-4*np.imag(alpha)*np.imag(beta)),1])
 
     (p1,q1),(p2,q2) = neighbours(r,s)
+    konstant = _even_const(alpha,beta,coefficient_field_hint) if ((q1 + q2) % 2) == 0 else _odd_const(alpha,beta,coefficient_field_hint)
 
-    if ((q1 + q2) % 2) == 0:
-        p = even_const - polynomial_coefficients_fast(p1,q1,alpha,beta,coefficient_field_hint)*polynomial_coefficients_fast(p2,q2,alpha,beta,coefficient_field_hint) - polynomial_coefficients_fast(np.abs(p1-p2),np.abs(q1-q2),alpha,beta,coefficient_field_hint)
-    else:
-        p = odd_const - polynomial_coefficients_fast(p1,q1,alpha,beta,coefficient_field_hint)*polynomial_coefficients_fast(p2,q2,alpha,beta,coefficient_field_hint) - polynomial_coefficients_fast(np.abs(p1-p2),np.abs(q1-q2),alpha,beta,coefficient_field_hint)
+    p =  konstant-(polynomial_coefficients_fast(p1,q1,alpha,beta,coefficient_field_hint)*polynomial_coefficients_fast(p2,q2,alpha,beta,coefficient_field_hint) + polynomial_coefficients_fast(np.abs(p1-p2),np.abs(q1-q2),alpha,beta,coefficient_field_hint))
+
     return p
