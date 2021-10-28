@@ -3,10 +3,10 @@
     In this file are found methods to compute with the moduli space known as the `Riley slice'.
 """
 
-from ast import literal_eval
 import farey
-from numpy.polynomial import Polynomial as P
-import numpy as np
+from mpmath import mp
+mp.dps = 100
+import math
 import scipy.optimize
 
 try:
@@ -58,7 +58,7 @@ def poly_solve(poly, solver='mpsolve' if mpsolve_avail else 'scipy', max_iter=10
             if try_int:
                 mpsolve_poly.set_coefficient(d, int(poly.coef[d]))
             else:
-                mpsolve_poly.set_coefficient(d, float(np.real(poly.coef[d])))
+                mpsolve_poly.set_coefficient(d, float(mp.re(poly.coef[d])))
         return mpsolve_ctx.solve(mpsolve_poly)
 
     elif solver == 'sympy':
@@ -96,28 +96,25 @@ def riley_slice(a, b, max_denom, solver='mpsolve' if mpsolve_avail else 'scipy',
         in to scipy followed by an attempt to improve the results using Newton's algorithm, or sympy.
 
         Arguments:
-          a, b -- the order of the cone points represented by X and Y respectively. Use np.inf for the parabolic case (or 1, since exp(2*pi*i/1) = exp(0) = 1).
+          a, b -- the order of the cone points represented by X and Y respectively. Use mp.inf for the parabolic case (or 1, since exp(2*pi*i/1) = exp(0) = 1).
           max_denom -- the maximum denominator Farey polynomials to compute
           solver -- one of 'mpsolve', 'scipy', 'sympy'
 
         Further keyword arguments are passed directly to poly_solve(), i.e. tol and max_iter for scipy.
     """
 
-    alpha = 1 if a == np.inf else np.exp(2j*np.pi/a)
-    beta = 1 if b == np.inf else np.exp(2j*np.pi/b)
+    alpha = 1 if a == mp.inf else mp.exp(2j*mp.pi/a)
+    beta = 1 if b == mp.inf else mp.exp(2j*mp.pi/b)
 
     points = []
     for q in range(1,max_denom+1):
       for p in range(1,q+1):
-        if np.gcd(p,q) == 1:
-          poly = farey.polynomial_coefficients_fast(p, q, alpha, beta, np.longdouble) + 2
-          if alpha == 1 and beta == 1:
-              try_int = True
-          else:
-              try_int = False
+        if math.gcd(p,q) == 1:
+          poly = farey.polynomial_coefficients_fast(p, q, alpha, beta) + 2
+          try_int = True if alpha == 1 and beta == 1 else False
           try:
             points.extend(poly_solve(poly, solver, try_int=try_int, **kwargs))
-          except np.ComplexWarning as e:
+          except Exception as e:
             raise RuntimeError(f'p = {p} q={q}') from e
     return points
 
@@ -127,10 +124,10 @@ def riley_centre(a,b):
         Arguments:
           a,b -- orders of X and Y respectively
     """
-    alpha = 1 if a == np.inf else np.exp(2j*np.pi/a)
-    beta = 1 if b == np.inf else np.exp(2j*np.pi/b)
+    alpha = 1 if a == mp.inf else mp.exp(2j*mp.pi/a)
+    beta = 1 if b == mp.inf else mp.exp(2j*mp.pi/b)
 
-    poly = farey.polynomial_coefficients_fast(1, 1, alpha, beta, int if (alpha == 1 and beta == 1) else np.longdouble) + 2
+    poly = farey.polynomial_coefficients_fast(1, 1, alpha, beta, int if (alpha == 1 and beta == 1) else mp.mpf) + 2
     roots = poly.roots()
     return (4 + roots[0])/2
 
@@ -150,11 +147,11 @@ def cusp_point(a, b, p, q, solver='mpsolve' if mpsolve_avail else 'scipy', **kwa
     """
 
     if p/q > 1:
-        return np.conj(cusp_point(a,b,2*q-p,q))
-    alpha = 1 if a == np.inf else np.exp(2j*np.pi/a)
-    beta = 1 if b == np.inf else np.exp(2j*np.pi/b)
+        return mp.conj(cusp_point(a,b,2*q-p,q))
+    alpha = 1 if a == mp.inf else mp.exp(2j*mp.pi/a)
+    beta = 1 if b == mp.inf else mp.exp(2j*mp.pi/b)
 
-    poly = farey.polynomial_coefficients_fast(p, q, alpha, beta, int if (alpha == 1 and beta == 1) else np.longdouble) + 2
+    poly = farey.polynomial_coefficients_fast(p, q, alpha, beta, int if (alpha == 1 and beta == 1) else mp.mpf) + 2
     roots = poly_solve(poly, solver, **kwargs)
 
     if q == 1:
@@ -164,12 +161,12 @@ def cusp_point(a, b, p, q, solver='mpsolve' if mpsolve_avail else 'scipy', **kwa
 
     if q > 1:
         (r1,s1),(r2,s2) = farey.neighbours(p,q)
-        left_cusp_angle = np.angle(cusp_point(a,b,r1,s1) - centre)
-        right_cusp_angle = np.angle(cusp_point(a,b,r2,s2) - centre)
+        left_cusp_angle = mp.arg(cusp_point(a,b,r1,s1) - centre)
+        right_cusp_angle = mp.arg(cusp_point(a,b,r2,s2) - centre)
 
         right_argument_roots = []
         for root in roots:
-            argument = np.angle(root - centre)
+            argument = mp.arg(root - centre)
             #print(f'{left_cusp_angle} < {argument} < {right_cusp_angle}?')
             if left_cusp_angle < argument and argument < right_cusp_angle:
                 right_argument_roots.append(root)
@@ -177,6 +174,6 @@ def cusp_point(a, b, p, q, solver='mpsolve' if mpsolve_avail else 'scipy', **kwa
         if right_argument_roots == []:
             raise RuntimeError('failed to find cusp: couldn\'t bound argument')
 
-        return max(right_argument_roots, key=np.abs)
+        return max(right_argument_roots, key=mp.fabs)
     else:
         raise ValueError('q < 1?')

@@ -5,8 +5,11 @@
     with the Riley slice and its geometry are found in riley.py.
 """
 
-import numpy as np
-from numpy.linalg import inv
+from mpmath import mp
+mp.dps = 50
+
+import math
+
 from numpy.polynomial import Polynomial as P
 import kleinian
 from functools import cache
@@ -24,8 +27,8 @@ def generator(letter,alpha,beta,mu):
           beta - upper-left entry of Y
           mu - lower-right entry of Y
     """
-    X = np.array([[alpha,1],[0,alpha**(-1)]])
-    Y = np.array([[beta,0],[mu,beta**(-1)]])
+    X = mp.matrix([[alpha,1],[0,alpha**(-1)]])
+    Y = mp.matrix([[beta,0],[mu,beta**(-1)]])
     table = {'X': X,
             'Y': Y,
             'x': kleinian._fast_inv(X),
@@ -48,15 +51,15 @@ def word(r,s):
           A list consisting of single-character strings representing generators of the group and their inverses (as defined in generator() above)
     """
 
-    if np.gcd(r,s) != 1:
+    if math.gcd(r,s) != 1:
         raise ValueError("Arguments to farey_word should be coprime integers.")
 
     lookup_table=[['x','X'],['Y','y']]
     length = 2*s
     def height(i):
         h = i*r/s
-        h = h+1/2 if np.ceil(h)==h else h
-        return int(np.ceil(h))
+        h = h+1/2 if mp.ceil(h)==h else h
+        return int(mp.ceil(h))
     return [ lookup_table[i%2][height(i)%2]  for i in range(1,length+1) ]
 
 def matrix(r,s,mu,alpha,beta):
@@ -67,9 +70,9 @@ def matrix(r,s,mu,alpha,beta):
           mu, alpha, beta --- parameters of the group as defined in generator() above
     """
     w = word(r,s)
-    product = np.identity(2)
+    product = mp.eye(2)
     for letter in w:
-        product = np.matmul(product,generator(letter,alpha,beta,mu))
+        product = product * generator(letter,alpha,beta,mu)
 
     return product
 
@@ -83,7 +86,7 @@ def fixed_points(r,s,mu,alpha,beta):
 
 
     m = matrix(r,s,mu,alpha,beta)
-    surd = np.sqrt((m[1][1] - m[0][0])**2 - 4*m[0][1]*m[1][0])
+    surd = mp.sqrt((m[1][1] - m[0][0])**2 - 4*m[0][1]*m[1][0])
     trans = m[0][0] - m[1][1]
 
     return [(trans+surd)/(2*m[1][0]),(trans-surd)/(2*m[1][0])]
@@ -98,7 +101,7 @@ def next_neighbour(p,q):
           p,q -- Coprime integers representing the fraction p/q in the interval [0,1].
     """
 
-    if np.gcd(p,q) != 1:
+    if math.gcd(p,q) != 1:
         raise ValueError("Arguments to farey_next should be coprime integers.")
 
     denom = q
@@ -107,22 +110,22 @@ def next_neighbour(p,q):
     r,s = p,q
     sign = -1
     while s != 0:
-        a = np.floor(r/s)
+        a = mp.floor(r/s)
         r_new = int(s)
         s_new = int(r - a*s)
-        r = int(r_new/np.gcd(r_new,s_new))
-        s = int(s_new/np.gcd(r_new,s_new))
+        r = int(r_new/math.gcd(r_new,s_new))
+        s = int(s_new/math.gcd(r_new,s_new))
         p2_new = int(a*p2 + p1)
         q2_new = int(a*q2 + q1)
         p1,q1 = p2,q2
-        p2 = int(p2_new/np.gcd(p2_new,q2_new))
-        q2 = int(q2_new/np.gcd(p2_new,q2_new))
+        p2 = int(p2_new/math.gcd(p2_new,q2_new))
+        q2 = int(q2_new/math.gcd(p2_new,q2_new))
         sign = -sign
-    k = np.floor((denom - sign*q1)/denom)
+    k = mp.floor((denom - sign*q1)/denom)
 
     a = int(k*p + sign*p1)
     b = int(k*q + sign*q1)
-    u, v = int(a/np.gcd(a,b)), int(b/np.gcd(a,b))
+    u, v = int(a/math.gcd(a,b)), int(b/math.gcd(a,b))
     return (u,v)
 
 @cache
@@ -142,14 +145,14 @@ def neighbours(p,q):
 
 @cache
 def _even_const(alpha,beta,coefficient_field_hint):
-    return coefficient_field_hint(4+2*np.real(alpha**2)+2*np.real(beta**2))
+    return coefficient_field_hint(4+2*mp.re(alpha**2)+2*mp.re(beta**2))
 
 @cache
 def _odd_const(alpha,beta,coefficient_field_hint):
-    return coefficient_field_hint(4*(np.real(alpha/beta) + np.real(alpha*beta)))
+    return coefficient_field_hint(4*(mp.re(alpha/beta) + mp.re(alpha*beta)))
 
 @cache
-def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=np.clongdouble):
+def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=mp.mpf):
     """ Return the coefficients of the Farey polynomial of slope r/s.
 
         The method used is the recursion algorithm.
@@ -157,19 +160,19 @@ def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=np.clongd
         Arguments:
           r,s -- coprime integers representing the slope of the desired polynomial
           alpha, beta -- parameters of the group
-          coefficient_field_hint -- expected type of the polynomial coefficients (e.g. for real coefficients, np.longdouble)
     """
 
     if r == 0 and s == 1:
-        return P([coefficient_field_hint(2*np.real(alpha/beta)),-1])
+        return P([coefficient_field_hint(2*mp.re(alpha/beta)),-1])
     if r == 1 and s == 1:
-        return P([coefficient_field_hint(2*np.real(alpha*beta)),1])
+        return P([coefficient_field_hint(2*mp.re(alpha*beta)),1])
     if r == 1 and s == 2:
-        return P([2,coefficient_field_hint(-4*np.imag(alpha)*np.imag(beta)),1])
+        return P([2,coefficient_field_hint(-4*mp.im(alpha)*mp.im(beta)),1])
 
     (p1,q1),(p2,q2) = neighbours(r,s)
     konstant = _even_const(alpha,beta,coefficient_field_hint) if ((q1 + q2) % 2) == 0 else _odd_const(alpha,beta,coefficient_field_hint)
 
-    p =  konstant-(polynomial_coefficients_fast(p1,q1,alpha,beta,coefficient_field_hint)*polynomial_coefficients_fast(p2,q2,alpha,beta,coefficient_field_hint) + polynomial_coefficients_fast(np.abs(p1-p2),np.abs(q1-q2),alpha,beta,coefficient_field_hint))
+    p =  konstant-(polynomial_coefficients_fast(p1,q1,alpha,beta,coefficient_field_hint)*polynomial_coefficients_fast(p2,q2,alpha,beta,coefficient_field_hint) + polynomial_coefficients_fast(mp.fabs(p1-p2),mp.fabs(q1-q2),alpha,beta,coefficient_field_hint))
+
 
     return p
