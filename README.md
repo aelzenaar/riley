@@ -19,6 +19,8 @@ generalisations, along with the associated combinatorial group theory and geomet
  * [slice_plotter.py](slice_plotter.py) -- a script to plot Riley slices without all the extra machinery in graphical_limits.py.
  * [farey_graph.py](farey_graph.py) -- a script to plot the Farey addition graph with the butterfly colouring. Example
     output: [the addition graph](farey_graph_coloured.png), [the Stern-Brocot tree](farey_graph_tree.png)
+ * [cusps.py](cusps.py) -- a script to plot the limit set at a given cusp point. See also [cusps_shaded.py](cusps_shaded.py) which attempts to use [datashader](https://datashader.org/).
+ * [generate_polynomials.py](generate_polynomials.py) -- generate a file of Mathematica code containing lots of Farey polynomials.
 
 ### Python library
 There are three files containing general Python code which can be called in the Python interpreter or used in Python scripts.
@@ -31,7 +33,8 @@ There are three files containing general Python code which can be called in the 
 ## Dependencies
 
  * Python 3 (tested on 3.9.7)
- * numpy and scipy (all)
+ * scipy (all)
+ * [mpmath](https://mpmath.org/) (all)
  * matplotlib (limit_plotter.py, slice_plotter.py)
  * tkinter (graphical_limits.py)
  * pydot, networkx (farey_graph.py)

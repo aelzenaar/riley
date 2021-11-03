@@ -6,7 +6,7 @@
 """
 
 from mpmath import mp
-mp.dps = 50
+mp.dps = 1000
 
 import math
 
@@ -86,10 +86,10 @@ def fixed_points(r,s,mu,alpha,beta):
 
 
     m = matrix(r,s,mu,alpha,beta)
-    surd = mp.sqrt((m[1][1] - m[0][0])**2 - 4*m[0][1]*m[1][0])
-    trans = m[0][0] - m[1][1]
+    surd = mp.sqrt((m[1,1] - m[0,0])**2 - 4*m[0,1]*m[1,0])
+    trans = m[0,0] - m[1,1]
 
-    return [(trans+surd)/(2*m[1][0]),(trans-surd)/(2*m[1][0])]
+    return [(trans+surd)/(2*m[1,0]),(trans-surd)/(2*m[1,0])]
 
 @cache
 def next_neighbour(p,q):
@@ -144,15 +144,15 @@ def neighbours(p,q):
         return (r2,s2),(r1,s1)
 
 @cache
-def _even_const(alpha,beta,coefficient_field_hint):
-    return coefficient_field_hint(4+2*mp.re(alpha**2)+2*mp.re(beta**2))
+def _even_const(alpha,beta):
+    return 4+2*mp.re(alpha**2)+2*mp.re(beta**2)
 
 @cache
-def _odd_const(alpha,beta,coefficient_field_hint):
-    return coefficient_field_hint(4*(mp.re(alpha/beta) + mp.re(alpha*beta)))
+def _odd_const(alpha,beta):
+    return 4*(mp.re(alpha/beta) + mp.re(alpha*beta))
 
 @cache
-def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=mp.mpf):
+def polynomial_coefficients_fast(r,s,alpha,beta,_=None):
     """ Return the coefficients of the Farey polynomial of slope r/s.
 
         The method used is the recursion algorithm.
@@ -163,16 +163,16 @@ def polynomial_coefficients_fast(r,s,alpha,beta,coefficient_field_hint=mp.mpf):
     """
 
     if r == 0 and s == 1:
-        return P([coefficient_field_hint(2*mp.re(alpha/beta)),-1])
+        return P([2*mp.re(alpha/beta),-1])
     if r == 1 and s == 1:
-        return P([coefficient_field_hint(2*mp.re(alpha*beta)),1])
+        return P([2*mp.re(alpha*beta),1])
     if r == 1 and s == 2:
-        return P([2,coefficient_field_hint(-4*mp.im(alpha)*mp.im(beta)),1])
+        return P([2,-4*mp.im(alpha)*mp.im(beta),1])
 
     (p1,q1),(p2,q2) = neighbours(r,s)
-    konstant = _even_const(alpha,beta,coefficient_field_hint) if ((q1 + q2) % 2) == 0 else _odd_const(alpha,beta,coefficient_field_hint)
+    konstant = _even_const(alpha,beta) if ((q1 + q2) % 2) == 0 else _odd_const(alpha,beta)
 
-    p =  konstant-(polynomial_coefficients_fast(p1,q1,alpha,beta,coefficient_field_hint)*polynomial_coefficients_fast(p2,q2,alpha,beta,coefficient_field_hint) + polynomial_coefficients_fast(mp.fabs(p1-p2),mp.fabs(q1-q2),alpha,beta,coefficient_field_hint))
+    p =  konstant-(polynomial_coefficients_fast(p1,q1,alpha,beta)*polynomial_coefficients_fast(p2,q2,alpha,beta) + polynomial_coefficients_fast(mp.fabs(p1-p2),mp.fabs(q1-q2),alpha,beta))
 
 
     return p

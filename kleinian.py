@@ -1,18 +1,18 @@
 """ Generic methods for Kleinian groups.
 """
 
-import numpy as np
-
-import random
 from multiprocessing import Pool
+from mpmath import mp, fp
+import numpy as np
+import random
 import functools
 import gc
 
 def _fast_inv(mat):
     """ Invert a 2x2 matrix *assuming it has det 1*.
     """
-    assert(mat.shape == (2,2))
-    return [[mat[1][1],-mat[0][1]],[-mat[1][0],mat[0][0]]]
+    assert((mat.rows,mat.cols) == (2,2))
+    return mp.matrix([[mat[1,1],-mat[0,1]],[-mat[1,0],mat[0,0]]])
 
 def limit_set_dfs(generators, seed, depth, coloured, only_leaves=False):
     """ Return an array of points approximating the limit set of a group using a depth-first search.
@@ -37,14 +37,16 @@ def limit_set_dfs(generators, seed, depth, coloured, only_leaves=False):
         print("Computing at depth " + str(d+1) + "/"+ str(depth))
         word_list.append([])
         for old_word in word_list[d]:
-            word_list[d+1].extend([(g, np.matmul(old_word[1], generators[g]), old_word[2]) for g in range(len(generators)) if g != old_word[0]])
+            word_list[d+1].extend([(g, old_word[1] * generators[g], old_word[2]) for g in range(len(generators)) if g != old_word[0]])
 
     if only_leaves:
         word_list = word_list[-2:-1]
 
-    seed = np.stack((seed,np.ones(len(seed))))
+    seed.rows = 2
+    for i in range(seed.cols):
+      seed[1,i] = 1
     word_list = [item for sublist in word_list for item in sublist]
-    limit_set_projective = [(np.matmul(w[1], seed), w[2]) for w in word_list]
+    limit_set_projective = [(w[1] * seed, w[2]) for w in word_list]
 
     if coloured:
         return [([q[0]/q[1] for q in p[0].transpose()], p[1]) for p in limit_set_projective]
@@ -59,8 +61,10 @@ def _dynamics_of_one_word(decorated_gens, seed, depth,rep):
         Arguments and output format optimised for use in limit_set_markov not in user code.
 
         Arguments:
-          depth -- length of word to generate
-          _ -- ignored (means we can curry this function inside multiprocessing.Pool.map())
+          decorated_gens -- list of pairs (n,X) where X is the nth generator (if n > 0) or the inverse of the nth generator (if n < 0).
+          seed - complex points to map by the generators to produce the limit limit set, as points of CP.
+          depth -- length of word to generate.
+          rep -- this is the rep'th repetition in the loop.
 
         Returns:
           list of pairs (point,gen) where point is a complex point in the *affine* limit set and gen is the first letter of the word we generated
@@ -68,20 +72,25 @@ def _dynamics_of_one_word(decorated_gens, seed, depth,rep):
 
     #print(f'_dynamics_of_one_word {rep}',flush=True)
 
+    # We have to convert backwards and forwards between mpmath and numpy in order to cross the multiprocessing boundary,
+    # due to issues like https://github.com/uqfoundation/dill/issues/238 and https://github.com/sympy/sympy/issues/11999.
+    decorated_gens = {g: mp.matrix(m) for g,m in decorated_gens.items()}
+    seed = mp.matrix(seed)
+
     random.seed()
     key = random.choice(list(decorated_gens))
     previous_letter = key
-    image = np.matmul(decorated_gens[key], seed)
+    image = decorated_gens[key] * seed
 
-    orbit = [(p[0]/p[1], key) for p in image.transpose()]
+    orbit = [(p[0]/p[1], key) for p in image.T.tolist()]
 
     for d in range(1,depth):
         admissable_keys = list(decorated_gens)
         admissable_keys.remove(-previous_letter)
         key = random.choice(admissable_keys)
         previous_letter = key
-        image = np.matmul(decorated_gens[key],image)
-        orbit.extend([(p[0]/p[1], key) for p in image.transpose()])
+        image = decorated_gens[key] * image
+        orbit.extend([(np.clongdouble(p[0]/p[1]), key) for p in image.T.tolist()])
 
     return orbit
 
@@ -98,8 +107,14 @@ def limit_set_markov(generators, seed, depth, reps):
           depth - maximal word length to generate
           reps - how many words to generate
     """
-    decorated_gens = { np.byte(g + 1): generators[g] for g in range(len(generators))}
-    decorated_gens.update({np.byte(-g - 1): _fast_inv(generators[g]) for g in range(len(generators))})
+    decorated_gens = { (g + 1): generators[g] for g in range(len(generators))}
+    decorated_gens.update({(-g - 1): _fast_inv(generators[g]) for g in range(len(generators))})
+
+
+    # We have to convert backwards and forwards between mpmath and numpy in order to cross the multiprocessing boundary,
+    # due to issues like https://github.com/uqfoundation/dill/issues/238 and https://github.com/sympy/sympy/issues/11999.
+    decorated_gens = {g: np.matrix(fp.matrix(m).tolist(),dtype=np.clongdouble) for g,m in decorated_gens.items()}
+    seed = np.array(seed,dtype=np.clongdouble)
 
     seed = np.stack((seed,np.ones(len(seed))))
 
@@ -107,7 +122,7 @@ def limit_set_markov(generators, seed, depth, reps):
     with Pool() as pool:
         for orbit in pool.imap(functools.partial(_dynamics_of_one_word, decorated_gens, seed, depth), range(reps)):
             for pair in orbit:
-                yield pair
+                yield (mp.mpmathify(pair[0]),pair[1])
             del orbit
     #for orbit in map(functools.partial(_dynamics_of_one_word, decorated_gens, seed, depth), range(reps)):
         #for pair in orbit:

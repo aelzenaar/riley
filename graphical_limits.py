@@ -1,4 +1,4 @@
-import numpy as np
+import mpmath as mp
 
 import riley
 import kleinian
@@ -62,7 +62,7 @@ slice_selection.set('parabolic')
 def change_slice(*args):
     new_slice = slice_selection.get()
     if new_slice == 'parabolic':
-        redraw_slice(riley.riley_slice(np.inf,np.inf,slice_parabolic_max_denom))
+        redraw_slice(riley.riley_slice(mp.inf,mp.inf,slice_parabolic_max_denom))
         p_entry['state']=tk.DISABLED
         q_entry['state']=tk.DISABLED
     elif new_slice == 'elliptic':
@@ -95,9 +95,9 @@ slice_canvas.grid(column=0,row=0)
 def redraw_slice(points):
     slice_canvas.delete("all")
     for point in points:
-        if point.real > riley_bounds[0]  and point.real < riley_bounds[1] and point.imag > riley_bounds[2] and point.imag < riley_bounds[3]:
+        if mp.re(point) > riley_bounds[0]  and mp.re(point) < riley_bounds[1] and mp.im(point) > riley_bounds[2] and mp.im(point) < riley_bounds[3]:
             radius=1
-            x,y = usual_coords_to_canvas(point.real,point.imag)
+            x,y = usual_coords_to_canvas(mp.re(point),mp.im(point))
             slice_canvas.create_oval(x-radius, y-radius, x + radius, y + radius, fill="black", width=0)
 
 change_slice()
@@ -143,16 +143,15 @@ def redraw_limit(canvas_x,canvas_y):
         X = farey.generator('X', 1, 1, x + y*1j)
         Y = farey.generator('Y', 1, 1, x + y*1j)
     elif current_slice == 'elliptic':
-        X = farey.generator('X', np.exp(2j*np.pi/elliptic_p), np.exp(2j*np.pi/elliptic_q), x + y*1j)
-        Y = farey.generator('Y', np.exp(2j*np.pi/elliptic_p), np.exp(2j*np.pi/elliptic_q), x + y*1j)
-    seed = [farey.fixed_points(0,1,Y[1][0],X[0][0],Y[0][0])[0]]
-    print(str(len(seed)))
+        X = farey.generator('X', mp.exp(2j*mp.pi/elliptic_p), mp.exp(2j*mp.pi/elliptic_q), x + y*1j)
+        Y = farey.generator('Y', mp.exp(2j*mp.pi/elliptic_p), mp.exp(2j*mp.pi/elliptic_q), x + y*1j)
+    seed = mp.matrix([farey.fixed_points(0,1,Y[1, 0],X[0, 0],Y[0, 0])[0]])
     colours = {-2: 'red', -1:'blue', 1:'green', 2:'purple'}
     limitset_canvas.delete("all")
     for (point,colour) in kleinian.limit_set_markov([X,Y],seed,limit_set_depth,limit_set_points):
-        if point.real > limit_bounds[0]  and point.real < limit_bounds[1] and point.imag > limit_bounds[2] and point.imag < limit_bounds[3]:
+        if mp.re(point) > limit_bounds[0]  and mp.re(point) < limit_bounds[1] and mp.im(point) > limit_bounds[2] and mp.im(point) < limit_bounds[3]:
             radius=1
-            x,y = usual_coords_to_canvas(float(point.real),float(point.imag))
+            x,y = usual_coords_to_canvas(float(mp.re(point)),float(mp.im(point)))
             #print(str(x) +' '+ str(y)  +' '+ str(point)+ ' '+ str(colour)+colours[colour])
             limitset_canvas.create_oval(x-radius, y-radius, x + radius, y + radius, fill=colours[colour], width = 0)
 
@@ -182,9 +181,9 @@ def compute_farey(*args):
             if current_slice == 'parabolic':
                 matrix = farey.matrix(int(vals[0]),int(vals[1]),complex(selected_position.get()),1,1)
             elif current_slice == 'elliptic':
-                matrix = farey.matrix(int(vals[0]),int(vals[1]),complex(selected_position.get()),np.exp(2j*np.pi/elliptic_p),np.exp(2j*np.pi/elliptic_q))
+                matrix = farey.matrix(int(vals[0]),int(vals[1]),complex(selected_position.get()),mp.exp(2j*mp.pi/elliptic_p),mp.exp(2j*mp.pi/elliptic_q))
             fareymatrix.set('matrix = ' + str(matrix))
-            fareytrace.set('tr = ' + str(np.trace(matrix)))
+            fareytrace.set('tr = ' + str(mp.trace(matrix)))
 
     except ValueError:
         messagebox.showerror("Error", "Enter the slope in the format p/q with p,q integers")
