@@ -33,6 +33,7 @@ seeds = farey.fixed_points(0,1,mu,alpha,beta)\
 ls = kleinian.limit_set_markov([X,Y],mp.matrix(seeds),depth,reps)
 
 colours = {-2: 'r', -1:'b', 1:'g', 2:'y'}
+print((ls.rows,ls.cols))
 plt.scatter([mp.re(t[0]) for t in ls],[mp.im(t[0]) for t in ls],c=[colours[t[1]] for t in ls],s=.1,alpha=.1,marker='.',linewidths=0)
 
 plt.axis('equal')

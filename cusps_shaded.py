@@ -1,4 +1,4 @@
-import numpy as np
+import mpmath as mp
 import kleinian
 import matplotlib.pyplot as plt
 import riley
@@ -6,6 +6,9 @@ import farey
 import datashader as ds
 import datashader.transfer_functions as tf
 import pandas
+import dask
+import dask.dataframe as dd
+from dask.delayed import delayed
 
 # Orders of elliptics
 p = 3
@@ -15,17 +18,16 @@ q = 5
 r = 1
 s = 2
 
-reps = 1000000
+per_batch = 100000
+batches = 20
 depth = 15
 
+mu = riley.cusp_point(p,q,r,s)
 
-
-mu = np.cdouble(riley.cusp_point(p,q,r,s))
-
-alpha = np.cdouble(np.exp(2j*np.pi/p))
-beta = np.cdouble(np.exp(2j*np.pi/q))
-X = np.array([[alpha,1],[0,np.conj(alpha)]])
-Y = np.array([[beta,0],[mu,np.conj(beta)]])
+alpha = mp.exp(2j*mp.pi/p)
+beta = mp.exp(2j*mp.pi/q)
+X = mp.matrix([[alpha,1],[0,mp.conj(alpha)]])
+Y = mp.matrix([[beta,0],[mu,mp.conj(beta)]])
 
 seeds = farey.fixed_points(0,1,mu,alpha,beta)\
       + farey.fixed_points(1,1,mu,alpha,beta)\
@@ -33,13 +35,28 @@ seeds = farey.fixed_points(0,1,mu,alpha,beta)\
 
 print("Found fixed points.",flush=True)
 
-df = pandas.DataFrame(data=[(np.real(point[0]), np.imag(point[0]), point[1]) for point in kleinian.limit_set_markov([X,Y],np.cdouble(seeds),depth,reps)], columns=['x','y','colour'], copy=False)
-df['colour']=df['colour'].astype("category")
-cvs = ds.Canvas(plot_width=2000,plot_height=2000,x_range=(-4,4), y_range=(-4,4), x_axis_type='linear', y_axis_type='linear')
-aggc = cvs.points(df,'x','y',ds.by('colour', ds.count()))
+dask.config.set(scheduler='single-threaded') # We are already running in parallel in each batch; if we don't do this then Dask launches
+                                             # many copies of one_batch() and we get killed by the OOM killer.
+def one_batch(batch):
+  print(f"Running batch {batch+1}/{batches}")
+  ls = kleinian.limit_set_markov([X,Y],seeds,depth,per_batch)
+  df = pandas.DataFrame(data=[(float(mp.re(point[0])), float(mp.im(point[0])), point[1]) for point in ls], columns=['x','y','colour'], copy=False)
+  df['colour']=df['colour'].astype("category")
+  return df
 
+dfs = [delayed(one_batch)(batch) for batch in range(batches)]
+df = dd.from_delayed(dfs)
+cvs = ds.Canvas(plot_width=3000,plot_height=3000,x_range=(-4,4), y_range=(-4,4), x_axis_type='linear', y_axis_type='linear')
+
+agg = cvs.points(df,'x','y')
+img = tf.shade(agg, cmap="black", how="linear", min_alpha=0)
+
+#aggc = cvs.points(df,'x','y',ds.by('colour', ds.count()))
 #colours = {-2: 'red', -1:'blue', 1:'green', 2:'purple'}
-img =  tf.shade(aggc)
+#img =  tf.shade(aggc)
 
-plt.imshow(img)
-plt.savefig('cusp12_elliptic35_shader2.png',dpi=2000)
+fig = plt.imshow(img)
+plt.axis('off')
+fig.axes.get_xaxis().set_visible(False)
+fig.axes.get_yaxis().set_visible(False)
+plt.savefig('cusp12_elliptic35_shader2.png', dpi=2000, bbox_inches='tight', pad_inches = 0)
