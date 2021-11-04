@@ -1,3 +1,8 @@
+""" Script to plot limit sets of generic Kleinian groups
+
+    This is an interactive text-mode script, it outputs instructions as you go so it should be self-explanatory.
+"""
+
 import numpy as np
 import kleinian
 import matplotlib.pyplot as plt

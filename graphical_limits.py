@@ -1,3 +1,8 @@
+""" A horribly hacky GUI to display limit sets of groups in the Riley slices.
+
+    Inspired by the schottky software written by Danny Calegari and Alden Walker (https://github.com/dannycalegari/schottky).
+"""
+
 import mpmath as mp
 
 import riley

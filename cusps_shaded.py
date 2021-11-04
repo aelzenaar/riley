@@ -1,3 +1,23 @@
+""" A script to plot the limit set of a particular cusp group, with maximal power and efficiency.
+
+    This is only as accurate as the riley.cusp_point() function allows (i.e. make sure you have
+    sacrificed the correct number of goats before running the script...).
+
+    The limit point seeds are the fixed points of the 0/1, 1/1, and 1/2 Farey words at the given cusp point.
+
+    Limit set is plotted using datashader and dask --- thus this script will not run into any of the memory
+    issues that cusps.py has.
+
+    Options to change:
+        p, q -- orders of the elliptic elements (set to mp.inf for the parabolic case)
+        r, s -- slope of the desired cusp
+        per_batch, batches -- you should be able to run kleinian.limit_set_markov with reps set to `per_batch'; we do this `batches' times (so we don't run out of RAM).
+        depth -- maximum word length to compute orbits with
+
+    Output image filename is cusp_{r}_{s}_elliptic_{p}_{q}_shaded.png (in the current directory).
+"""
+
+
 import mpmath as mp
 import kleinian
 import riley

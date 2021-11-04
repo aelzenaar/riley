@@ -1,3 +1,15 @@
+""" A script to draw the Farey graph and the Stern-Brocot tree.
+
+    We colour the edges according to the `butterfly' scheme or just the edges of the Stern-Brocot tree
+    according to the options set below (see [EMS21b] cited in README.md for a better explanation).
+
+    Options:
+      max_denom -- denominator to plot up to.
+      plot_uncoloured -- True/False: plot the uncoloured edges as well as the coloured ones.
+      only_tree -- True/False: colour only the edges of the Stern-Brocot tree.
+      file_name -- filename to output image to.
+
+"""
 import networkx as nx
 import pydot
 import farey

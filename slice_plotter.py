@@ -1,4 +1,9 @@
-# Plot a Riley slice with the given parameters
+""" Plot a Riley slice with the given parameters
+
+    Options:
+      ordera, orderb -- cone angles (set to mp.inf for the parabolic slice)
+      maxdenom -- maximum denominator of Farey polynomial to use in the approximation
+"""
 
 from mpmath import mp
 import riley
@@ -8,6 +13,7 @@ from datetime import datetime
 ordera = 6
 orderb = 8
 maxdenom = 100
+
 mp.dps = 100
 
 print(f'Began run at {datetime.now()}')

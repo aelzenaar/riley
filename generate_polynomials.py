@@ -1,10 +1,21 @@
+""" A script to generate lots of Farey polynomials.
+
+    Output the Farey polynomials of slope p/q with q <= max_denom as a Mathematica-readable list
+    to the file named in the options.
+
+    Options:
+      max_denom -- maximal slope denominator to generate polynomials for
+      filename -- for output
+"""
+
 import farey
 import numpy as np
 
 # We hit Python's maximum float value at 745.
 max_denom = 300
+filename = 'fareys_34.txt'
 
-with open('fareys_34.txt','w') as f:
+with open(filename,'w') as f:
     f.write('{\n')
     for q in range(1,max_denom+1):
         for p in range(1,q+1):

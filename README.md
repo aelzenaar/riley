@@ -4,12 +4,24 @@ This is a computational package for dealing with the Riley slice of Schottky spa
 generalisations, along with the associated combinatorial group theory and geometry. In order to generate Farey polynomials, we use the
 results obtained in our paper [[EMS21b](#EMS21b)]. We also have some further recent results on the Riley slice which are of interest
 from a computational point of view [[EMS21a](#EMS21a)]; in a later version of this software we will incorporate some of the insights
-from that paper. The program [graphical_limits.py](graphical_limits.py) was inspired by the [schottky](https://github.com/dannycalegari/schottky)
+from this paper. The program [graphical_limits.py](graphical_limits.py) was inspired by the [schottky](https://github.com/dannycalegari/schottky)
 software written by Danny Calegari and Alden Walker.
 
 ![The parabolic Riley slice](riley_slice.png?raw=true "The parabolic Riley slice")
 
+* [Authorship](#authorship)
+* [Background material and related work](#background-material-and-related-work)
+* [The software included here](#the-software-included-here)
+  + [Fun programs to run](#fun-programs-to-run)
+  + [Python library](#python-library)
+* [Dependencies](#dependencies)
+* [References](#references)
 
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
+## Authorship
+This software was written by [Alex Elzenaar](https://aelzenaar.github.io) under the supervision of Gaven Martin (NZ Institute of Advanced Study, Massey University) and Jeroen Schillewaert (The University of Auckland).
 
 
 ## Background material and related work
@@ -41,6 +53,7 @@ There are three files containing general Python code which can be called in the 
 
 
 ## Dependencies
+Disclaimer: this is [academic software](https://academia.stackexchange.com/questions/37370/should-i-share-my-horrible-software) so may require some fiddling to get it to work on your machine.
 
  * Python 3 (tested on 3.9.7)
  * scipy (all)
@@ -55,7 +68,7 @@ There are three files containing general Python code which can be called in the 
 <a id="B88">[B83]</a>
 Alan F. Beardon. *The geometry of discrete groups*. Graduate Texts in Mathematics 91. Springer-Verlag, 1983.
 
-<a id="EMS21b">[EMS21b]</a>
+<a id="EMS21a">[EMS21a]</a>
 Alex Elzenaar, Gaven Martin, and Jeroen Schillewaert. “Approximations of the Riley slice”. In preparation.
 
 <a id="EMS21b">[EMS21b]</a>
