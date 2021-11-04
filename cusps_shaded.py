@@ -1,6 +1,5 @@
 import mpmath as mp
 import kleinian
-import matplotlib.pyplot as plt
 import riley
 import farey
 import datashader as ds
@@ -9,6 +8,7 @@ import pandas
 import dask
 import dask.dataframe as dd
 from dask.delayed import delayed
+from datashader.utils import export_image
 
 # Orders of elliptics
 p = 3
@@ -17,6 +17,8 @@ q = 5
 # Cusp slope
 r = 1
 s = 2
+
+filename = f'cusp_{r}_{s}_elliptic_{p}_{q}_shaded'
 
 per_batch = 100000
 batches = 20
@@ -46,17 +48,13 @@ def one_batch(batch):
 
 dfs = [delayed(one_batch)(batch) for batch in range(batches)]
 df = dd.from_delayed(dfs)
-cvs = ds.Canvas(plot_width=3000,plot_height=3000,x_range=(-4,4), y_range=(-4,4), x_axis_type='linear', y_axis_type='linear')
+cvs = ds.Canvas(plot_width=4000,plot_height=4000,x_range=(-4,4), y_range=(-4,4), x_axis_type='linear', y_axis_type='linear')
 
 agg = cvs.points(df,'x','y')
-img = tf.shade(agg, cmap="black", how="linear", min_alpha=0)
+img = tf.shade(agg, cmap="black", min_alpha=0)
 
 #aggc = cvs.points(df,'x','y',ds.by('colour', ds.count()))
 #colours = {-2: 'red', -1:'blue', 1:'green', 2:'purple'}
 #img =  tf.shade(aggc)
 
-fig = plt.imshow(img)
-plt.axis('off')
-fig.axes.get_xaxis().set_visible(False)
-fig.axes.get_yaxis().set_visible(False)
-plt.savefig('cusp12_elliptic35_shader2.png', dpi=2000, bbox_inches='tight', pad_inches = 0)
+export_image(img, filename, background="white", export_path=".")
