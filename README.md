@@ -2,7 +2,10 @@
 
 This is a computational package for dealing with the Riley slice of Schottky space [[KS94](#KS94), [KS98](#KS98)]  and its elliptic
 generalisations, along with the associated combinatorial group theory and geometry. In order to generate Farey polynomials, we use the
-results obtained in our paper [[EMS21b](#EMS21b)].
+results obtained in our paper [[EMS21b](#EMS21b)]. We also have some further recent results on the Riley slice which are of interest
+from a computational point of view [[EMS21a](#EMS21a)]; in a later version of this software we will incorporate some of the insights
+from that paper. The program [graphical_limits.py](graphical_limits.py) was inspired by the [schottky](https://github.com/dannycalegari/schottky)
+software written by Danny Calegari and Alden Walker.
 
 ![The parabolic Riley slice](riley_slice.png?raw=true "The parabolic Riley slice")
 
@@ -12,9 +15,7 @@ results obtained in our paper [[EMS21b](#EMS21b)].
 ## Background material and related work
 
 For background material in Kleinian groups which underpins the mathematics we study using this software, see [[B83](#B83),[M87](#M87)]. For a more
-practical introduction to some of the computational geometry and some very nice pictures, see [[MSW02](#MSW02)]. We also have some further recent results
-on the Riley slice which are of interest from a computational point of view [[EMS21a](#EMS21a)]; in a later version of this software we will incorporate
-some of the insights from that paper.
+practical introduction to some of the computational geometry and some very nice pictures, see [[MSW02](#MSW02)] and [its associated website](http://klein.math.okstate.edu/IndrasPearls/).
 
 ## The software included here
 
