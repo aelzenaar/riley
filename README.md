@@ -69,7 +69,7 @@ Disclaimer: this is [academic software](https://academia.stackexchange.com/quest
 Alan F. Beardon. *The geometry of discrete groups*. Graduate Texts in Mathematics 91. Springer-Verlag, 1983.
 
 <a id="EMS21a">[EMS21a]</a>
-Alex Elzenaar, Gaven Martin, and Jeroen Schillewaert. “Approximations of the Riley slice”. In preparation.
+Alex Elzenaar, Gaven Martin, and Jeroen Schillewaert. “Approximations of the Riley slice”. November 2021. arXiv:2111.03230 [math.GT].
 
 <a id="EMS21b">[EMS21b]</a>
 Alex Elzenaar, Gaven Martin, and Jeroen Schillewaert. “The combinatorics of Farey words and their traces”. In preparation.
