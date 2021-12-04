@@ -43,6 +43,7 @@ practical introduction to some of the computational geometry and some very nice 
  * [cusps.py](cusps.py) -- a script to plot the limit set at a given cusp point. If you have a powerful computer and want much better pictures, you probably
     want to use [cusps_shaded.py](cusps_shaded.py) instead which attempts to use [datashader](https://datashader.org/).
  * [generate_polynomials.py](generate_polynomials.py) -- generate a file of Mathematica code containing lots of Farey polynomials.
+ * [limit_set_with_circles.py](limit_set_with_circles.py) -- plot limit sets together with the isometric circles.
 
 ### Python library
 There are three files containing general Python code which can be called in the Python interpreter or used in Python scripts.
@@ -69,7 +70,7 @@ Disclaimer: this is [academic software](https://academia.stackexchange.com/quest
 Alan F. Beardon. *The geometry of discrete groups*. Graduate Texts in Mathematics 91. Springer-Verlag, 1983.
 
 <a id="EMS21a">[EMS21a]</a>
-Alex Elzenaar, Gaven Martin, and Jeroen Schillewaert. “Approximations of the Riley slice”. November 2021. arXiv:2111.03230 [math.GT].
+Alex Elzenaar, Gaven Martin, and Jeroen Schillewaert. “Approximations of the Riley slice”. November 2021. [arXiv:2111.03230](https://arxiv.org/abs/2111.03230) [math.GT].
 
 <a id="EMS21b">[EMS21b]</a>
 Alex Elzenaar, Gaven Martin, and Jeroen Schillewaert. “The combinatorics of Farey words and their traces”. In preparation.
