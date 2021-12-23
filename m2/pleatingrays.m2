@@ -1,20 +1,23 @@
-k =  toField (QQ[i]/(i^2+1))
-R = k[x,y]
+k = QQ[i]/(i^2+1);
+R = k[x,y];
+S = QQ[x,y];
+use R;
 
-
-a = 1
-b = 1
-XX = matrix {{a,1},{0,a^(-1)}}
-xx = inverse XX
-YY = matrix {{b,0},{x+yi,b^(-1)}}
-yy = inverse YY
+a = 1;
+b = 1;
+XX = matrix (R, {{a,1},{0,a^(-1)}});
+xx = matrix (R, {{a^(-1),-1},{0,a}});
+YY = matrix (R, {{b,0},{x+y*i,b^(-1)}});
+yy = matrix (R, {{b^(-1),0},{-x-y*i,b}});
 
 lookupTable = {{xx, XX}, {YY, yy}};
 
 modifiedCeiling = n -> ceiling(if ceiling n == n then n + 1/2 else n);
 
-word = (p,q) -> product(apply(1 .. 2*q, i-> lookupTable#(if i%2 == 0 then 0 else 1)#(if modifiedCeiling(i*p/q)%2 == 0 then 0 else 1)))
-farey = (p,q) -> trace word (p,q)
+word = (p,q) -> product toList apply(1 .. 2*q, n-> lookupTable#(if n%2 == 0 then 0 else 1)#(if modifiedCeiling(n*p/q)%2 == 0 then 0 else 1));
+farey = (p,q) -> trace word (p,q);
 
-farey(0,1)
-substitute(farey(0,1),{i=>0})
+pleatingComponents = (p,q) -> factor substitute(-i*farey(p,q),S)
+
+coprime = n -> select(1..n, m->(gcd(m,n)==1))
+
