@@ -27,16 +27,6 @@ def usual_coords_to_canvas(x,y):
     y = scale*(riley_bounds[3]-riley_bounds[2]) - y
     return x,y
 
-def draw_riley_slice(p,q,max_denom,widget):
-    pixmap = QPixmap(widget.size())
-    painter = QPainter(pixmap)
-    points = riley.riley_slice(p,q,max_denom)
-    for point in points:
-        if mp.re(point) > riley_bounds[0]  and mp.re(point) < riley_bounds[1] and mp.im(point) > riley_bounds[2] and mp.im(point) < riley_bounds[3]:
-            x,y = usual_coords_to_canvas(mp.re(point),mp.im(point))
-            painter.drawPoint(x,y)
-    widget.setPixmap(pixmap)
-
 def show_about_dialog():
     text = "<center>" \
            "<h1>Riley Slice Explorer</h1>" \
@@ -50,8 +40,9 @@ if __name__ == '__main__':
     window = QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(window)
+
     ui.actionAbout.triggered.connect(show_about_dialog)
-    draw_riley_slice(mp.inf,mp.inf,30,ui.sliceView)
+    ui.sliceView.paintPoints(riley.riley_slice(3,4,10))
 
 
     window.show()

@@ -1,53 +1,31 @@
-from PyQt5.QtWidgets import QWidget, QPixmap
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtGui import *
 
 class CoordinateSystem(QLabel):
     def __init__(self, parent=None):
         super(CoordinateSystem, self).__init__(parent)
+        self.windowBL = (-4,-4)
+        self.windowTR = (4,4)
+        self.resize(200,200)
 
-        timer = QTimer(self)
-        timer.timeout.connect(self.update)
-        timer.start(1000)
+    def inWindow(self,z):
+        (x,y) = (z.real,z.imag)
+        return (self.windowBL[0] < x and x < self.windowTR[0]) and (self.windowBL[1] < y and y < self.windowTR[1])
 
-        self.setWindowTitle("Analog Clock")
-        self.resize(200, 200)
+    def complexToWindowCoords(self,z):
+        return ((z.real-self.windowBL[0]) * self.width()/(self.windowTR[0]-self.windowBL[0]), self.height()*(1-(z.imag-self.windowBL[1])/(self.windowTR[1]-self.windowBL[1])))
 
-    def blitPixmap(self,pixmap):
-        self.pixmap = pixmap
+    def paintPoints(self, points):
+        pixmap = QPixmap(self.size())
+        pixmap.fill()
+        painter = QPainter(pixmap)
+        painter.setPen(QPen(QColor(0), 3))
+        #painter.scale(self.width() / 100.0, self.height() / 100.0)
 
-    def paintEvent(self, event):
-        side = min(self.width(), self.height())
-        time = QTime.currentTime()
+        for point in points:
+            if self.inWindow(point):
+                coords = self.complexToWindowCoords(point)
+                painter.drawPoint(int(coords[0]),int(coords[1]))
 
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.translate(self.width() / 2, self.height() / 2)
-        painter.scale(side / 200.0, side / 200.0)
-
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(AnalogClock.hourColor)
-
-        painter.save()
-        painter.rotate(30.0 * ((time.hour() + time.minute() / 60.0)))
-        painter.drawConvexPolygon(AnalogClock.hourHand)
-        painter.restore()
-
-        painter.setPen(AnalogClock.hourColor)
-
-        for i in range(12):
-            painter.drawLine(88, 0, 96, 0)
-            painter.rotate(30.0)
-
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(AnalogClock.minuteColor)
-
-        painter.save()
-        painter.rotate(6.0 * (time.minute() + time.second() / 60.0))
-        painter.drawConvexPolygon(AnalogClock.minuteHand)
-        painter.restore()
-
-        painter.setPen(AnalogClock.minuteColor)
-
-        for j in range(60):
-            if (j % 5) != 0:
-                painter.drawLine(92, 0, 96, 0)
-            painter.rotate(6.0)
+        painter.end()
+        self.setPixmap(pixmap)

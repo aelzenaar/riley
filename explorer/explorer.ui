@@ -15,9 +15,6 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="1" column="0">
-     <widget class="QWidget" name="sliceView" native="true"/>
-    </item>
     <item row="0" column="0">
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
@@ -178,9 +175,6 @@
       </item>
      </layout>
     </item>
-    <item row="1" column="2">
-     <widget class="QWidget" name="limitView" native="true"/>
-    </item>
     <item row="2" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
@@ -205,6 +199,29 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="1" column="0">
+     <widget class="CoordinateSystem" name="sliceView">
+      <property name="autoFillBackground">
+       <bool>true</bool>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="CoordinateSystem" name="limitView">
+      <property name="autoFillBackground">
+       <bool>true</bool>
+      </property>
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -242,6 +259,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CoordinateSystem</class>
+   <extends>QLabel</extends>
+   <header>CoordinateSystem</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
@@ -262,7 +286,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="qOrderRadios"/>
   <buttongroup name="pOrderRadios"/>
+  <buttongroup name="qOrderRadios"/>
  </buttongroups>
 </ui>
