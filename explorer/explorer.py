@@ -4,11 +4,12 @@
 """
 
 import riley
+import farey
 import mpmath as mp
 
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
-from PyQt5.QtGui import QPixmap, QPainter, QIntValidator
+from PyQt5.QtGui import QPixmap, QPainter, QIntValidator, QDoubleValidator
 from ui_explorer import Ui_MainWindow
 
 scale = 100
@@ -19,7 +20,8 @@ app = QApplication(sys.argv)
 window = QMainWindow()
 ui = Ui_MainWindow()
 ui.setupUi(window)
-
+pOrder = None
+qOrder = None
 
 def show_about_dialog():
     text = "<center>" \
@@ -29,10 +31,13 @@ def show_about_dialog():
            "Copyright &copy; Alex Elzenaar.</p>"
     QMessageBox.about(window, "About Explorer", text)
 
-def show_validation_failed_dialog():
+def show_posint_validation_failed_dialog():
     QMessageBox.critical(window, "Invalid input", "Only enter positive numbers")
+def show_real_validation_failed_dialog():
+    QMessageBox.critical(window, "Invalid input", "Only enter real numbers")
 
 def slice_parameters_changed(_=None):
+    global pOrder, qOrder
     if ui.pInfRadioButton.isChecked():
         pOrder = mp.inf
     else:
@@ -51,6 +56,13 @@ def slice_parameters_changed(_=None):
 
     ui.sliceView.paintPoints(riley.riley_slice(pOrder,qOrder,fareyDenom))
 
+def slice_point_changed_via_edit():
+    ui.sliceView.selectPoint(float(ui.muReEdit.text()) + 1j * float(ui.muImEdit.text()))
+
+def slice_point_changed_via_click(z):
+    ui.muReEdit.setText(str(z.real)[:8])
+    ui.muImEdit.setText(str(z.imag)[:8])
+
 
 if __name__ == '__main__':
     ui.actionAbout.triggered.connect(show_about_dialog)
@@ -59,13 +71,19 @@ if __name__ == '__main__':
     ui.qOrderRadios.buttonClicked.connect(slice_parameters_changed)
 
     order_validator = QIntValidator(0,100000)
-    def setup_edit(edit):
-        edit.editingFinished.connect(slice_parameters_changed)
-        edit.setValidator(order_validator)
-        edit.inputRejected.connect(show_validation_failed_dialog)
-    setup_edit(ui.pOrderEdit)
-    setup_edit(ui.qOrderEdit)
-    setup_edit(ui.fareyDenomEdit)
+    mu_validator = QDoubleValidator()
+
+    def setup_edit(edit,changed,validator,fail_function):
+        edit.editingFinished.connect(changed)
+        edit.setValidator(validator)
+        edit.inputRejected.connect(fail_function)
+
+    setup_edit(ui.pOrderEdit,slice_parameters_changed,order_validator,show_posint_validation_failed_dialog)
+    setup_edit(ui.qOrderEdit,slice_parameters_changed,order_validator,show_posint_validation_failed_dialog)
+    setup_edit(ui.fareyDenomEdit,slice_parameters_changed,order_validator,show_posint_validation_failed_dialog)
+    setup_edit(ui.muReEdit,slice_point_changed_via_edit,mu_validator,show_real_validation_failed_dialog)
+    setup_edit(ui.muImEdit,slice_point_changed_via_edit,mu_validator,show_real_validation_failed_dialog)
+    ui.sliceView.selected_changed.connect(slice_point_changed_via_click)
 
     slice_parameters_changed()
 

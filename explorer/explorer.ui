@@ -82,23 +82,25 @@
       <item>
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Generators:</string>
+         <string>Moduli point:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="xGeneratorLabel">
+       <widget class="QLineEdit" name="muReEdit"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>TextLabel</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;+ &lt;span style=&quot; font-style:italic;&quot;&gt;i &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::RichText</enum>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="yGeneratorLabel">
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="muImEdit"/>
       </item>
      </layout>
     </item>
