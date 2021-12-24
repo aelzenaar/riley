@@ -8,24 +8,18 @@ import mpmath as mp
 
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
-from PyQt5.QtGui import QPixmap, QPainter
+from PyQt5.QtGui import QPixmap, QPainter, QIntValidator
 from ui_explorer import Ui_MainWindow
 
 scale = 100
 riley_bounds = (-4,4,-4,4) # -x,x,-y,y
 limit_bounds = (-4,4,-4,4) # -x,x,-y,y
 
-def canvas_to_usual_coords():
-    y = scale*(riley_bounds[3]-riley_bounds[2]) - y
-    x = x/scale + riley_bounds[0]
-    y = y/scale + riley_bounds[2]
-    return x,y
+app = QApplication(sys.argv)
+window = QMainWindow()
+ui = Ui_MainWindow()
+ui.setupUi(window)
 
-def usual_coords_to_canvas(x,y):
-    x = scale*(x - riley_bounds[0])
-    y = scale*(y - riley_bounds[2])
-    y = scale*(riley_bounds[3]-riley_bounds[2]) - y
-    return x,y
 
 def show_about_dialog():
     text = "<center>" \
@@ -35,14 +29,46 @@ def show_about_dialog():
            "Copyright &copy; Alex Elzenaar.</p>"
     QMessageBox.about(window, "About Explorer", text)
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    window = QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(window)
+def show_validation_failed_dialog():
+    QMessageBox.critical(window, "Invalid input", "Only enter positive numbers")
 
+def slice_parameters_changed(_=None):
+    if ui.pInfRadioButton.isChecked():
+        pOrder = mp.inf
+    else:
+        if ui.pOrderEdit.text() == '':
+            return
+        pOrder = int(ui.pOrderEdit.text())
+
+    if ui.qInfRadioButton.isChecked():
+        qOrder = mp.inf
+    else:
+        if ui.qOrderEdit.text() == '':
+            return
+        qOrder = int(ui.pOrderEdit.text())
+
+    fareyDenom = int(ui.fareyDenomEdit.text())
+
+    ui.sliceView.paintPoints(riley.riley_slice(pOrder,qOrder,fareyDenom))
+
+
+if __name__ == '__main__':
     ui.actionAbout.triggered.connect(show_about_dialog)
-    ui.sliceView.paintPoints(riley.riley_slice(3,4,40))
+
+    ui.pOrderRadios.buttonClicked.connect(slice_parameters_changed)
+    ui.qOrderRadios.buttonClicked.connect(slice_parameters_changed)
+
+    order_validator = QIntValidator(0,100000)
+    def setup_edit(edit):
+        edit.editingFinished.connect(slice_parameters_changed)
+        edit.setValidator(order_validator)
+        edit.inputRejected.connect(show_validation_failed_dialog)
+    setup_edit(ui.pOrderEdit)
+    setup_edit(ui.qOrderEdit)
+    setup_edit(ui.fareyDenomEdit)
+
+    slice_parameters_changed()
+
     ui.limitView.paintPoints(riley.riley_slice(4,3,40))
 
 
