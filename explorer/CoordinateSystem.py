@@ -1,12 +1,16 @@
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
 class CoordinateSystem(QLabel):
     def __init__(self, parent=None):
         super(CoordinateSystem, self).__init__(parent)
-        self.windowBL = (-4,-4)
-        self.windowTR = (4,4)
-        self.resize(200,200)
+        self.windowBL = (-4,-2)
+        self.windowTR = (4,2)
+        self.ratio = (self.windowTR[1]-self.windowBL[1])/(self.windowTR[0]-self.windowBL[0])
+        self.resize(400,int(400*self.ratio))
+        self.points = None
+        self.setMinimumSize(1, 1);
 
     def inWindow(self,z):
         (x,y) = (z.real,z.imag)
@@ -16,10 +20,11 @@ class CoordinateSystem(QLabel):
         return ((z.real-self.windowBL[0]) * self.width()/(self.windowTR[0]-self.windowBL[0]), self.height()*(1-(z.imag-self.windowBL[1])/(self.windowTR[1]-self.windowBL[1])))
 
     def paintPoints(self, points):
+        self.points = points
         pixmap = QPixmap(self.size())
         pixmap.fill()
         painter = QPainter(pixmap)
-        painter.setPen(QPen(QColor(0), 3))
+        painter.setPen(QPen(QColor(0,0,0,100), int(self.width()/400)))
         #painter.scale(self.width() / 100.0, self.height() / 100.0)
 
         for point in points:
@@ -29,3 +34,9 @@ class CoordinateSystem(QLabel):
 
         painter.end()
         self.setPixmap(pixmap)
+
+    def resizeEvent(self,e):
+        super().resizeEvent(e)
+        if self.points != None:
+            self.resize(self.width(),int(self.width()*self.ratio))
+            self.paintPoints(self.points)

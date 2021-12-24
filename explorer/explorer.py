@@ -42,7 +42,8 @@ if __name__ == '__main__':
     ui.setupUi(window)
 
     ui.actionAbout.triggered.connect(show_about_dialog)
-    ui.sliceView.paintPoints(riley.riley_slice(3,4,10))
+    ui.sliceView.paintPoints(riley.riley_slice(3,4,40))
+    ui.limitView.paintPoints(riley.riley_slice(4,3,40))
 
 
     window.show()
