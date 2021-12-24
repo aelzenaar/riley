@@ -45,6 +45,14 @@ practical introduction to some of the computational geometry and some very nice 
  * [generate_polynomials.py](generate_polynomials.py) -- generate a file of Mathematica code containing lots of Farey polynomials.
  * [limit_set_with_circles.py](limit_set_with_circles.py) -- plot limit sets together with the isometric circles.
 
+## Future features? Some easy, some (very) hard
+ * Draw the associated surface for a point (somehow) together with the corresponding foliation
+ * Plot pleating ray of given slope
+ * Check computationally if a point is in or out
+ * Zooming
+ * Trace curve & give animation
+ * Compute Teichmuller distance
+
 ### Python library
 There are three files containing general Python code which can be called in the Python interpreter or used in Python scripts.
 
