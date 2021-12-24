@@ -21,8 +21,8 @@ import pandas
 # CONFIGURATION OPTIONS
 ###
 
-limit_set_points = 1000
-limit_set_depth = 8
+limit_set_points = 500
+limit_set_depth = 6
 
 scale = 100
 riley_bounds = (-4,4,-4,4) # -x,x,-y,y
@@ -126,7 +126,7 @@ def motion(event):
     x,y = canvas_to_usual_coords(x,y)
     hover_position.set(str(x + y*1j))
     if mouse_down == True:
-        print('redraw')
+        #print('redraw')
         redraw_limit(event.x,event.y)
 
 last_selected = None
