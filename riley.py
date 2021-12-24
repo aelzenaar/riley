@@ -8,6 +8,7 @@ from mpmath import mp
 mp.dps = 100
 import math
 import scipy.optimize
+from numpy.polynomial import Polynomial as P
 
 try:
     import mpsolve
@@ -71,6 +72,7 @@ def poly_solve(poly, solver='mpsolve' if mpsolve_avail else 'scipy', max_iter=10
         return [sympy.N(root) for root in sympy.solve(sympy_poly,ZZ)]
 
     elif solver == 'scipy':
+        poly = P(list(map(float,poly.coef))) # Need to cast to float in case we have mpmath but not mpsolve
         roots_bad = poly.roots()
         return [scipy.optimize.newton(poly, root, poly.deriv(),fprime2=poly.deriv(2),maxiter=max_iter,tol=tol) for root in roots_bad]
 
