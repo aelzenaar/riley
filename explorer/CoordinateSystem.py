@@ -64,6 +64,6 @@ class CoordinateSystem(QLabel):
             self.paintPoints(self.points)
 
     def mouseMoveEvent(self,e):
-        super().mouseMoveEvent(e)
+        #super().mouseMoveEvent(e) # Disable this, otherwise the drag event gets sent to KDE and the whole window moves
         self.selectPoint(self.windowCoordsToComplex(e.x(),e.y()))
 
