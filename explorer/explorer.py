@@ -50,7 +50,7 @@ def slice_parameters_changed(_=None):
     else:
         if ui.qOrderEdit.text() == '':
             return
-        qOrder = int(ui.pOrderEdit.text())
+        qOrder = int(ui.qOrderEdit.text())
 
     fareyDenom = int(ui.fareyDenomEdit.text())
 
