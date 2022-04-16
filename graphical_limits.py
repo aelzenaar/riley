@@ -148,8 +148,8 @@ def redraw_limit(canvas_x,canvas_y):
         X = farey.generator('X', 1, 1, x + y*1j)
         Y = farey.generator('Y', 1, 1, x + y*1j)
     elif current_slice == 'elliptic':
-        X = farey.generator('X', mp.exp(2j*mp.pi/elliptic_p), mp.exp(2j*mp.pi/elliptic_q), x + y*1j)
-        Y = farey.generator('Y', mp.exp(2j*mp.pi/elliptic_p), mp.exp(2j*mp.pi/elliptic_q), x + y*1j)
+        X = farey.generator('X', mp.exp(1j*mp.pi/elliptic_p), mp.exp(1j*mp.pi/elliptic_q), x + y*1j)
+        Y = farey.generator('Y', mp.exp(1j*mp.pi/elliptic_p), mp.exp(1j*mp.pi/elliptic_q), x + y*1j)
     seed = mp.matrix([farey.fixed_points(0,1,Y[1, 0],X[0, 0],Y[0, 0])[0]])
     colours = {-2: 'red', -1:'blue', 1:'green', 2:'purple'}
     limitset_canvas.delete("all")
@@ -186,7 +186,7 @@ def compute_farey(*args):
             if current_slice == 'parabolic':
                 matrix = farey.matrix(int(vals[0]),int(vals[1]),complex(selected_position.get()),1,1)
             elif current_slice == 'elliptic':
-                matrix = farey.matrix(int(vals[0]),int(vals[1]),complex(selected_position.get()),mp.exp(2j*mp.pi/elliptic_p),mp.exp(2j*mp.pi/elliptic_q))
+                matrix = farey.matrix(int(vals[0]),int(vals[1]),complex(selected_position.get()),mp.exp(1j*mp.pi/elliptic_p),mp.exp(1j*mp.pi/elliptic_q))
             fareymatrix.set('matrix = ' + str(matrix))
             fareytrace.set('tr = ' + str(mp.trace(matrix)))
 

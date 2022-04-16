@@ -105,8 +105,8 @@ def riley_slice(a, b, max_denom, solver='mpsolve' if mpsolve_avail else 'scipy',
         Further keyword arguments are passed directly to poly_solve(), i.e. tol and max_iter for scipy.
     """
 
-    alpha = 1 if a == mp.inf else mp.exp(2j*mp.pi/a)
-    beta = 1 if b == mp.inf else mp.exp(2j*mp.pi/b)
+    alpha = 1 if a == mp.inf else mp.exp(1j*mp.pi/a)
+    beta = 1 if b == mp.inf else mp.exp(1j*mp.pi/b)
 
     points = []
     for q in range(1,max_denom+1):
@@ -126,8 +126,8 @@ def riley_centre(a,b):
         Arguments:
           a,b -- orders of X and Y respectively
     """
-    alpha = 1 if a == mp.inf else mp.exp(2j*mp.pi/a)
-    beta = 1 if b == mp.inf else mp.exp(2j*mp.pi/b)
+    alpha = 1 if a == mp.inf else mp.exp(1j*mp.pi/a)
+    beta = 1 if b == mp.inf else mp.exp(1j*mp.pi/b)
 
     poly = farey.polynomial_coefficients_fast(1, 1, alpha, beta, int if (alpha == 1 and beta == 1) else mp.mpf) + 2
     roots = poly.roots()
@@ -150,8 +150,8 @@ def cusp_point(a, b, p, q, solver='mpsolve' if mpsolve_avail else 'scipy', **kwa
 
     if p/q > 1:
         return mp.conj(cusp_point(a,b,2*q-p,q))
-    alpha = 1 if a == mp.inf else mp.exp(2j*mp.pi/a)
-    beta = 1 if b == mp.inf else mp.exp(2j*mp.pi/b)
+    alpha = 1 if a == mp.inf else mp.exp(1j*mp.pi/a)
+    beta = 1 if b == mp.inf else mp.exp(1j*mp.pi/b)
 
     poly = farey.polynomial_coefficients_fast(p, q, alpha, beta, int if (alpha == 1 and beta == 1) else mp.mpf) + 2
     roots = poly_solve(poly, solver, **kwargs)
