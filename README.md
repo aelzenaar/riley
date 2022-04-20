@@ -2,8 +2,8 @@
 
 This is a computational package for dealing with the Riley slice of Schottky space [[KS94](#KS94), [KS98](#KS98)]  and its elliptic
 generalisations, along with the associated combinatorial group theory and geometry. In order to generate Farey polynomials, we use the
-results obtained in our paper [[EMS21b](#EMS21b)]. We also have some further recent results on the Riley slice which are of interest
-from a computational point of view [[EMS21a](#EMS21a)]; in a later version of this software we will incorporate some of the insights
+results obtained in our paper [[EMS22a](#EMS22a)]. We also have some further recent results on the Riley slice which are of interest
+from a computational point of view [[EMS21](#EMS21)]; in a later version of this software we will incorporate some of the insights
 from this paper. The program [graphical_limits.py](graphical_limits.py) was inspired by the [schottky](https://github.com/dannycalegari/schottky)
 software written by Danny Calegari and Alden Walker.
 
@@ -26,8 +26,9 @@ This software was written by [Alex Elzenaar](https://aelzenaar.github.io) under 
 
 ## Background material and related work
 
-For background material in Kleinian groups which underpins the mathematics we study using this software, see [[B83](#B83),[M87](#M87)]. For a more
-practical introduction to some of the computational geometry and some very nice pictures, see [[MSW02](#MSW02)] and [its associated website](http://klein.math.okstate.edu/IndrasPearls/).
+For background material in Kleinian groups which underpins the mathematics we study using this software, see [[B83](#B83),[M87](#M87)]. Background specific to the Riley slice
+may be found in the proceedings article [[EMS22b](#EMS22b)] and in my MSc thesis [[Elz22](#Elz22)]. For a more practical introduction to some of the computational geometry and
+some very nice pictures, see [[MSW02](#MSW02)] and [its associated website](http://klein.math.okstate.edu/IndrasPearls/).
 
 ## The software included here
 
@@ -81,11 +82,17 @@ Hirotaka Akiyoshi, Makoto Sakuma, Masaaki Wada, and Yasushi Yamashita. _Puncture
 <a id="B88">[B83]</a>
 Alan F. Beardon. *The geometry of discrete groups*. Graduate Texts in Mathematics 91. Springer-Verlag, 1983.
 
-<a id="EMS21a">[EMS21a]</a>
+<a id="Elz22">[Elz22]</a>
+Alex Elzenaar. “Deformation spaces of Kleinian groups”. MSc thesis. The University of Auckland, 2022.
+
+<a id="EMS21">[EMS21]</a>
 Alex Elzenaar, Gaven Martin, and Jeroen Schillewaert. “Approximations of the Riley slice”. November 2021. [arXiv:2111.03230](https://arxiv.org/abs/2111.03230) [math.GT].
 
-<a id="EMS21b">[EMS21b]</a>
-Alex Elzenaar, Gaven Martin, and Jeroen Schillewaert. “The combinatorics of Farey words and their traces”. In preparation.
+<a id="EMS22a">[EMS22a]</a>
+Alex Elzenaar, Gaven Martin, and Jeroen Schillewaert. “The combinatorics of Farey words and their traces”. April 2022. [arXiv:2204.08076](https://arxiv.org/abs/2204.08076) [math.GT]. A version with minor corrections is [on my website](https://aelzenaar.github.io/farey/farey.pdf).
+
+<a id="EMS22b">[EMS22b]</a>
+Alex Elzenaar, Gaven Martin, and Jeroen Schillewaert. “Concrete one complex dimensional moduli spaces of hyperbolic manifolds and orbifolds”. In: <i>2021-22 MATRIX annals</i>. Ed. by David R. Wood, Jan de Gier, Cheryl E. Prager, and Terrence Tao. MATRIX Book Series 5. Springer, to appear.
 
 <a id="KS94">[KS94]</a>
 Linda Keen and Caroline Series. “The Riley slice of Schottky space”. In: *Proceedings of the London Mathematics Society* 3.1 (69 1994), pp. 72–90.
