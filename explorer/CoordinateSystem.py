@@ -30,7 +30,7 @@ class CoordinateSystem(QLabel):
         pixmap = QPixmap(self.size())
         pixmap.fill()
         painter = QPainter(pixmap)
-        painter.setPen(QPen(QColor(0,0,0,100), int(self.width()/400)))
+        painter.setPen(QPen(QColor(0,0,0,50), int(self.width()/400)))
         #painter.scale(self.width() / 100.0, self.height() / 100.0)
 
         for point in points:

@@ -51,7 +51,8 @@ practical introduction to some of the computational geometry and some very nice 
  * Check computationally if a point is in or out
  * Zooming
  * Trace curve & give animation
- * Compute Teichmuller distance
+ * Compute Teichmuller distance, draw Teichmuller geodesics. Perhaps this is best done by studying the associated foliations.
+ * Plot 2-bridge knot groups and other features of interest in the exterior. See for instance [[ASWY07](#ASWY07)].
 
 ### Python library
 There are three files containing general Python code which can be called in the Python interpreter or used in Python scripts.
@@ -74,6 +75,9 @@ Disclaimer: this is [academic software](https://academia.stackexchange.com/quest
  * [datashader](https://datashader.org/), [pandas](https://pandas.pydata.org/), and [dask](https://dask.org/) (cusps_shaded.py)
 
 ## References
+<a id="ASWY07">[ASWY07]</a>
+Hirotaka Akiyoshi, Makoto Sakuma, Masaaki Wada, and Yasushi Yamashita. _Punctured torus groups and 2-bridge knot groups I_. Lecture Notes in Mathematics 1909. Springer, 2007
+
 <a id="B88">[B83]</a>
 Alan F. Beardon. *The geometry of discrete groups*. Graduate Texts in Mathematics 91. Springer-Verlag, 1983.
 
