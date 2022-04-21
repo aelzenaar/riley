@@ -12,8 +12,9 @@ software written by Danny Calegari and Alden Walker.
 * [Authorship](#authorship)
 * [Background material and related work](#background-material-and-related-work)
 * [The software included here](#the-software-included-here)
-  + [Fun programs to run](#fun-programs-to-run)
-  + [Python library](#python-library)
+   + [Fun programs to run](#fun-programs-to-run)
+   + [Python library](#python-library)
+* [Future features? Some easy, some (very) hard](#future-features--some-easy--some--very--hard)
 * [Dependencies](#dependencies)
 * [References](#references)
 
@@ -44,14 +45,8 @@ practical introduction to some of the computational geometry and some very nice 
     want to use [cusps_shaded.py](cusps_shaded.py) instead which attempts to use [datashader](https://datashader.org/).
  * [generate_polynomials.py](generate_polynomials.py) -- generate a file of Mathematica code containing lots of Farey polynomials.
  * [limit_set_with_circles.py](limit_set_with_circles.py) -- plot limit sets together with the isometric circles.
-
-## Future features? Some easy, some (very) hard
- * Draw the associated surface for a point (somehow) together with the corresponding foliation
- * Plot pleating ray of given slope
- * Check computationally if a point is in or out
- * Zooming
- * Trace curve & give animation
- * Compute Teichmuller distance
+ * [badpoints.py](badpoints.py) -- generate a graph of the `bad points' in the Farey tree, see Conjecture 6.7 of [[EMS22a](#EMS22a)].
+ * [indranecklace.py](indranecklace.py) -- generate the `Indra's Necklace' limit sets from Chapter 8 of [[MSW02](#MSW02)].
 
 ### Python library
 There are three files containing general Python code which can be called in the Python interpreter or used in Python scripts.
@@ -60,6 +55,13 @@ There are three files containing general Python code which can be called in the 
  * [farey.py](farey.py) -- methods for working with Farey words and polynomials
  * [riley.py](riley.py) -- methods for working with the Riley slices
 
+## Future features? Some easy, some (very) hard
+ * Draw the associated surface for a point (somehow) together with the corresponding foliation
+ * Plot pleating ray of given slope
+ * Check computationally if a point is in or out
+ * Zooming
+ * Trace curve & give animation
+ * Compute Teichmuller distance
 
 ## Dependencies
 Disclaimer: this is [academic software](https://academia.stackexchange.com/questions/37370/should-i-share-my-horrible-software) so may require some fiddling to get it to work on your machine.

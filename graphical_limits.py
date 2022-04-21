@@ -22,7 +22,7 @@ import pandas
 ###
 
 limit_set_points = 500
-limit_set_depth = 6
+limit_set_depth = 10
 
 scale = 100
 riley_bounds = (-4,4,-4,4) # -x,x,-y,y
