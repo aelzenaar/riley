@@ -5,16 +5,13 @@
 
 import riley
 import farey
+import kleinian
 import mpmath as mp
 
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
-from PyQt5.QtGui import QPixmap, QPainter, QIntValidator, QDoubleValidator
+from PyQt5.QtGui import QPixmap, QPainter, QIntValidator, QDoubleValidator, QImage
 from ui_explorer import Ui_MainWindow
-
-scale = 100
-riley_bounds = (-4,4,-4,4) # -x,x,-y,y
-limit_bounds = (-4,4,-4,4) # -x,x,-y,y
 
 app = QApplication(sys.argv)
 window = QMainWindow()
@@ -50,7 +47,7 @@ def slice_parameters_changed(_=None):
     else:
         if ui.qOrderEdit.text() == '':
             return
-        qOrder = int(ui.pOrderEdit.text())
+        qOrder = int(ui.qOrderEdit.text())
 
     fareyDenom = int(ui.fareyDenomEdit.text())
 
@@ -62,6 +59,9 @@ def slice_point_changed_via_edit():
 def slice_point_changed_via_click(z):
     ui.muReEdit.setText(str(z.real)[:8])
     ui.muImEdit.setText(str(z.imag)[:8])
+
+def limit_parameters_changed(z):
+    ui.limitView.redrawLimitSet(pOrder,qOrder,z)
 
 
 if __name__ == '__main__':
@@ -84,10 +84,11 @@ if __name__ == '__main__':
     setup_edit(ui.muReEdit,slice_point_changed_via_edit,mu_validator,show_real_validation_failed_dialog)
     setup_edit(ui.muImEdit,slice_point_changed_via_edit,mu_validator,show_real_validation_failed_dialog)
     ui.sliceView.selected_changed.connect(slice_point_changed_via_click)
+    ui.sliceView.selected_changed.connect(limit_parameters_changed)
 
     slice_parameters_changed()
+    limit_parameters_changed(2j)
 
-    ui.limitView.paintPoints(riley.riley_slice(4,3,40))
 
 
     window.show()

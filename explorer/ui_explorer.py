@@ -128,7 +128,7 @@ class Ui_MainWindow(object):
         self.sliceView.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.sliceView.setObjectName("sliceView")
         self.gridLayout_2.addWidget(self.sliceView, 1, 0, 1, 1)
-        self.limitView = CoordinateSystem(self.centralwidget)
+        self.limitView = LimitSetView(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(1)
@@ -187,3 +187,4 @@ class Ui_MainWindow(object):
         self.actionQuit.setShortcut(_translate("MainWindow", "Ctrl+Q"))
         self.actionAbout.setText(_translate("MainWindow", "About"))
 from CoordinateSystem import CoordinateSystem
+from LimitSetView import LimitSetView
