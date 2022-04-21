@@ -63,7 +63,8 @@ There are three files containing general Python code which can be called in the 
  * Check computationally if a point is in or out
  * Zooming
  * Trace curve & give animation
- * Compute Teichmuller distance
+ * Compute Teichmuller distance, draw Teichmuller geodesics. Perhaps this is best done by studying the associated foliations.
+ * Plot 2-bridge knot groups and other features of interest in the exterior. See for instance [[ASWY07](#ASWY07)].
 
 ## Dependencies
 Disclaimer: this is [academic software](https://academia.stackexchange.com/questions/37370/should-i-share-my-horrible-software) so may require some fiddling to get it to work on your machine.
