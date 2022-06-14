@@ -178,6 +178,33 @@ def polynomial_coefficients_fast(r,s,alpha,beta,_=None):
     return p
 
 @cache
+def polynomial_evaluate(r,s,alpha,beta,z):
+    """ Return the evaluation of the Farey polynomial of slope r/s at z.
+
+        The method used is the recursion algorithm.
+
+        Arguments:
+          r,s -- coprime integers representing the slope of the desired polynomial
+          alpha, beta -- parameters of the group
+          z -- point of evaluation
+    """
+
+    if r == 0 and s == 1:
+        return 2*mp.re(alpha/beta)-z
+    if r == 1 and s == 1:
+        return 2*mp.re(alpha*beta)+z
+    if r == 1 and s == 2:
+        return 2-4*mp.im(alpha)*mp.im(beta)*z+z**2
+
+    (p1,q1),(p2,q2) = neighbours(r,s)
+    konstant = _even_const(alpha,beta) if ((q1 + q2) % 2) == 0 else _odd_const(alpha,beta)
+
+    p =  konstant-(polynomial_evaluate(p1,q1,alpha,beta,z)*polynomial_evaluate(p2,q2,alpha,beta,z) + polynomial_evaluate(mp.fabs(p1-p2),mp.fabs(q1-q2),alpha,beta,z))
+
+
+    return p
+
+@cache
 def polynomial_coefficients_reduced(r,s):
     """ Return the coefficients of the reduced Farey polynomial (\Phi^{\infty,\infty}-2) of slope r/s.
 
