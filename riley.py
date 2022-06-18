@@ -129,9 +129,11 @@ def riley_centre(a,b):
     alpha = 1 if a == mp.inf else mp.exp(1j*mp.pi/a)
     beta = 1 if b == mp.inf else mp.exp(1j*mp.pi/b)
 
-    poly = farey.polynomial_coefficients_fast(1, 1, alpha, beta, int if (alpha == 1 and beta == 1) else mp.mpf) + 2
-    roots = poly.roots()
-    return (4 + roots[0])/2
+    poly_left = farey.polynomial_coefficients_fast(1, 1, alpha, beta, int if (alpha == 1 and beta == 1) else mp.mpf) + 2
+    roots_left = poly_left.roots()
+    poly_right = farey.polynomial_coefficients_fast(0, 1, alpha, beta, int if (alpha == 1 and beta == 1) else mp.mpf) + 2
+    roots_right = poly_right.roots()
+    return (roots_right[0] + roots_left[0])/2
 
 def cusp_point(a, b, p, q, solver='mpsolve' if mpsolve_avail else 'scipy', **kwargs):
     """ Return an approximation to the p/q-cusp point on the Riley slice boundary.
