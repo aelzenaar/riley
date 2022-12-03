@@ -165,8 +165,15 @@ def cusp_point(a, b, p, q, solver='mpsolve' if mpsolve_avail else 'scipy', **kwa
 
     if q > 1:
         (r1,s1),(r2,s2) = farey.neighbours(p,q)
-        left_cusp_angle = mp.arg(cusp_point(a,b,r1,s1) - centre)
-        right_cusp_angle = mp.arg(cusp_point(a,b,r2,s2) - centre)
+
+        def right_phase(angle):
+            if angle < 0:
+                return angle + 2*mp.pi
+            else:
+                return angle
+
+        left_cusp_angle = right_phase(mp.arg(cusp_point(a,b,r1,s1) - centre))
+        right_cusp_angle = right_phase(mp.arg(cusp_point(a,b,r2,s2) - centre))
 
         right_argument_roots = []
         for root in roots:
