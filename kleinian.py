@@ -82,7 +82,8 @@ def _dynamics_of_one_word(decorated_gens, seed, depth,rep):
     previous_letter = key
     image = decorated_gens[key] * seed
 
-    orbit = [(p[0]/p[1], key) for p in image.T.tolist()]
+    points = list(filter(lambda x: x[1] != 0, image.T.tolist()))
+    orbit = [(p[0]/p[1], key) for p in points]
 
     for d in range(1,depth):
         admissable_keys = list(decorated_gens)
@@ -90,7 +91,8 @@ def _dynamics_of_one_word(decorated_gens, seed, depth,rep):
         key = random.choice(admissable_keys)
         previous_letter = key
         image = decorated_gens[key] * image
-        orbit.extend([(np.clongdouble(p[0]/p[1]), key) for p in image.T.tolist()])
+        points = list(filter(lambda x: x[1] != 0, image.T.tolist()))
+        orbit.extend([(np.clongdouble(p[0]/p[1]), key) for p in points])
 
     return orbit
 

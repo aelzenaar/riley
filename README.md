@@ -1,5 +1,7 @@
 # Riley slice computational package
 
+**The new and improved version of this software is called [Bella](https://github.com/aelzenaar/bella).**
+
 This is a computational package for dealing with the Riley slice of Schottky space [[KS94](#KS94), [KS98](#KS98)]  and its elliptic
 generalisations, along with the associated combinatorial group theory and geometry. In order to generate Farey polynomials, we use the
 results obtained in our paper [[EMS22a](#EMS22a)]. We also have some further recent results on the Riley slice which are of interest
