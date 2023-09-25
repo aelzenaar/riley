@@ -21,12 +21,8 @@ import pandas
 # CONFIGURATION OPTIONS
 ###
 
-limit_set_points = 500
-<<<<<<< Updated upstream
-limit_set_depth = 10
-=======
-limit_set_depth = 15
->>>>>>> Stashed changes
+limit_set_points = 1000
+limit_set_depth = 8
 
 scale = 100
 riley_bounds = (-4,4,-4,4) # -x,x,-y,y
@@ -154,7 +150,7 @@ def redraw_limit(canvas_x,canvas_y):
     elif current_slice == 'elliptic':
         X = farey.generator('X', mp.exp(1j*mp.pi/elliptic_p), mp.exp(1j*mp.pi/elliptic_q), x + y*1j)
         Y = farey.generator('Y', mp.exp(1j*mp.pi/elliptic_p), mp.exp(1j*mp.pi/elliptic_q), x + y*1j)
-    seed = mp.matrix([farey.fixed_points(0,1,Y[1, 0],X[0, 0],Y[0, 0])[0]])
+    seed = mp.matrix([farey.fixed_points(1,2,Y[1, 0],X[0, 0],Y[0, 0])[0]])
     colours = {-2: 'red', -1:'blue', 1:'green', 2:'purple'}
     limitset_canvas.delete("all")
     for (point,colour) in kleinian.limit_set_markov([X,Y],seed,limit_set_depth,limit_set_points):

@@ -167,7 +167,7 @@ def polynomial_coefficients_fast(r,s,alpha,beta,_=None):
     if r == 1 and s == 1:
         return P([2*mp.re(alpha*beta),1])
     if r == 1 and s == 2:
-        return P([2,-4*mp.im(alpha)*mp.im(beta),1])
+        return P([2,-4*mp.im(alpha*beta),1])
 
     (p1,q1),(p2,q2) = neighbours(r,s)
     konstant = _even_const(alpha,beta) if ((q1 + q2) % 2) == 0 else _odd_const(alpha,beta)
